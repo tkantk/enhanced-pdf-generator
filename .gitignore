@@ -8,3 +8,6 @@ yarn-error.log*
 
 # runtime files
 .env
+
+# Output folder
+/output
