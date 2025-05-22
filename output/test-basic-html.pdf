@@ -1,0 +1,243 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+
+2 0 obj
+<<
+/Type /Pages
+/Kids [3 0 R 5 0 R]
+/Count 2
+>>
+endobj
+
+3 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/MediaBox [0 0 595 842]
+/Resources <<
+  /Font <<
+    /F1 7 0 R
+  >>
+>>
+/Contents 4 0 R
+>>
+endobj
+
+4 0 obj
+<<
+/Length 1349
+>>
+stream
+BT
+/F1 11 Tf
+50 781 Td
+(HTML to PDF Test Document) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(HTML to PDF Conversion Test) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Testing HTML content conversion to PDF format) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Document Features) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(This document tests various HTML elements and their conversion to PDF:) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Text formatting: Bold, italic, and normal text) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(HTML elements: Headers, paragraphs, lists, and tables) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Content extraction: Proper text extraction from HTML) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Test Results Table) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Test Case) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Expected Result) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Status) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Notes) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Title Extraction) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(HTML title in PDF metadata) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+( Pass) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Correctly extracted) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Content Conversion) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(HTML to text conversion) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+( Pass) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Tags removed, text preserved) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Structure Preservation) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Logical text flow) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+( Pass) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Proper paragraph breaks) Tj
+ET
+endstream
+endobj
+
+5 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/MediaBox [0 0 595 842]
+/Resources <<
+  /Font <<
+    /F1 9 0 R
+  >>
+>>
+/Contents 6 0 R
+>>
+endobj
+
+6 0 obj
+<<
+/Length 756
+>>
+stream
+BT
+/F1 11 Tf
+50 781 Td
+() Tj
+0 -15 Td
+(Important Note) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(This HTML to PDF conversion focuses on content extraction rather than) Tj
+0 -15 Td
+(visual formatting preservation. The goal is to create readable,) Tj
+0 -15 Td
+(well-structured PDF documents from HTML content.) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Technical Details) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(HTML parsing removes script and style tags) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Block elements are converted to paragraph breaks) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Text content is extracted and formatted) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(HTML entities are properly decoded) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Generated: 22/5/2025, 3:20:35 pm) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Test Environment: Production Ready) Tj
+ET
+endstream
+endobj
+
+7 0 obj
+<<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+>>
+endobj
+
+8 0 obj
+<<
+/Title (HTML to PDF Test Document)
+/Producer (Enhanced PDF Generator v1.0.0)
+/Creator (Enhanced PDF Generator)
+/CreationDate (D:20250522152035)
+/ModDate (D:20250522152035)
+>>
+endobj
+
+xref
+0 9
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000127 00000 n 
+0000000261 00000 n 
+0000001662 00000 n 
+0000001796 00000 n 
+0000002603 00000 n 
+0000002673 00000 n 
+trailer
+<<
+/Size 9
+/Root 1 0 R
+/Info 8 0 R
+>>
+startxref
+2866
+%%EOF
