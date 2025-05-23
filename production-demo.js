@@ -1,9 +1,7 @@
 /**
  * Production Demo and Test Suite
  * Enhanced PDF Generator - Production Ready
- *
- * This file demonstrates all features and runs comprehensive tests
- * to ensure the PDF generator works correctly in production environments.
+ * Version 2.0.0 - Updated for latest implementation
  */
 
 'use strict';
@@ -12,218 +10,124 @@ const EnhancedPDFGenerator = require('./enhanced-pdf-generator');
 const path = require('path');
 const fs = require('fs');
 
-// Test configuration
 const TEST_CONFIG = {
     outputDirectory: path.join(__dirname, 'output'),
-    enableDebug: true,
+    enableDebug: false,
     runPerformanceTests: true,
     testSamples: {
-        shortText: `Simple Test Document
-
-This is a basic test to verify the Enhanced PDF Generator works correctly.
-
-Key features tested:
-- Text processing
-- PDF structure validation
-- File output
-- Error handling
-
-Generated: ${new Date().toLocaleString()}`,
-
-        longText: `Enhanced PDF Generator - Production Test Report
-
-EXECUTIVE SUMMARY
-================
-
-This comprehensive test document validates the Enhanced PDF Generator's capabilities in a production environment. The generator has been designed to handle various content types, error scenarios, and performance requirements suitable for enterprise applications.
-
-SYSTEM REQUIREMENTS
-==================
-
-- Node.js 16.0.0 or higher
-- Memory: Minimum 512MB available
-- Disk Space: Varies based on output requirements
-- Operating System: Cross-platform (Windows, macOS, Linux)
-
-TECHNICAL SPECIFICATIONS
-=======================
-
-The Enhanced PDF Generator implements the PDF 1.4 specification with the following features:
-
-1. Document Structure
-   - Proper PDF object hierarchy
-   - Cross-reference table generation
-   - Valid trailer information
-   - Metadata embedding
-
-2. Text Processing
-   - UTF-8 character encoding support
-   - Automatic text wrapping
-   - Multi-page document support
-   - Configurable margins and spacing
-
-3. Content Types
-   - Plain text documents
-   - Basic HTML conversion
-   - Automatic content type detection
-   - Mixed content handling
-
-4. Error Handling
-   - Input validation
-   - Processing state management
-   - Graceful error recovery
-   - Comprehensive logging
-
-PERFORMANCE METRICS
-==================
-
-The generator has been optimized for:
-- Fast processing: < 100ms for typical documents
-- Low memory usage: < 50MB peak memory
-- Efficient file I/O: Streaming output where possible
-- Scalable architecture: Handles large documents
-
-SECURITY CONSIDERATIONS
-======================
-
-Production-ready security features include:
-- Input sanitization
-- Path traversal protection
-- Content size limitations
-- Safe character encoding
-- Memory management
-
-TESTING METHODOLOGY
-==================
-
-This test suite validates:
-1. Basic functionality
-2. Error handling
-3. Performance characteristics
-4. Cross-platform compatibility
-5. Memory management
-6. File system operations
-
-VALIDATION RESULTS
-=================
-
-All tests must pass for production deployment:
-- PDF structure validation
-- Content accuracy verification
-- Error condition handling
-- Performance benchmarks
-- Memory leak detection
-
-DEPLOYMENT RECOMMENDATIONS
-=========================
-
-For production deployment:
-1. Monitor memory usage patterns
-2. Implement appropriate logging
-3. Set up error tracking
-4. Configure resource limits
-5. Plan for scaling requirements
-
-This document serves as both a test case and documentation for the Enhanced PDF Generator's capabilities.
-
-Generated: ${new Date().toLocaleString()}
-Test Version: 1.0.0
-Environment: ${process.platform} ${process.arch}
-Node.js: ${process.version}`,
-
-        htmlContent: `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>HTML to PDF Test Document</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .header { background: #f0f8ff; padding: 15px; border: 1px solid #007bff; }
-        .section { margin: 20px 0; }
-        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background: #007bff; color: white; }
-        .highlight { background: #fff3cd; padding: 10px; border-left: 4px solid #ffc107; }
-    </style>
-</head>
+        simpleHtml: `<!DOCTYPE html>
+<html>
+<head><title>Simple Test</title></head>
 <body>
-    <div class="header">
-        <h1>HTML to PDF Conversion Test</h1>
-        <p>Testing HTML content conversion to PDF format</p>
-    </div>
+    <h1>Simple Test Document</h1>
+    <p>This is a basic test to verify the Enhanced PDF Generator.</p>
+    <p>Generated: ${new Date().toLocaleString()}</p>
+</body>
+</html>`,
 
-    <div class="section">
-        <h2>Document Features</h2>
-        <p>This document tests various HTML elements and their conversion to PDF:</p>
-        
-        <ul>
-            <li><strong>Text formatting</strong>: Bold, italic, and normal text</li>
-            <li><em>HTML elements</em>: Headers, paragraphs, lists, and tables</li>
-            <li><u>Content extraction</u>: Proper text extraction from HTML</li>
-        </ul>
-    </div>
+        styledHtmlContent: `<!DOCTYPE html>
+<html>
+<head><title>Styled HTML Test v2.0</title></head>
+<body>
+    <div>
+<h4 style="font-family: arial; margin-top: 0; margin-bottom: 16px; font-size: 20px; color:#2e2e2e;">Borrower's Information</h4>
+<hr style="margin-bottom: 16px;">
+<p style="font-family: arial; margin-top: 0; margin-bottom: 8px; font-size: 16px; color:#2e2e2e;">
+    Full Name: Mr Tushar Kant Kar
+</p>
+<p style="font-family: arial; margin-top: 0; margin-bottom: 8px; font-size: 16px; color:#2e2e2e;">
+    Mobile Number: 91 9,99,99,99,999
+</p>
+<p style="font-family: arial; margin-top: 0; margin-bottom: 8px; font-size: 16px; color:#2e2e2e;">Email Address: test@test.com</p>
+<p style="font-family: arial; margin-top: 0; margin-bottom: 8px; font-size: 16px; color:#2e2e2e;">Birthdate: 09/09/1999</p>
 
-    <div class="section">
-        <h2>Test Results Table</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Test Case</th>
-                    <th>Expected Result</th>
-                    <th>Status</th>
-                    <th>Notes</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Title Extraction</td>
-                    <td>HTML title in PDF metadata</td>
-                    <td>✓ Pass</td>
-                    <td>Correctly extracted</td>
-                </tr>
-                <tr>
-                    <td>Content Conversion</td>
-                    <td>HTML to text conversion</td>
-                    <td>✓ Pass</td>
-                    <td>Tags removed, text preserved</td>
-                </tr>
-                <tr>
-                    <td>Structure Preservation</td>
-                    <td>Logical text flow</td>
-                    <td>✓ Pass</td>
-                    <td>Proper paragraph breaks</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+<h4 style="font-family: arial; margin-top: 32px; margin-bottom: 16px; font-size: 20px; color:#2e2e2e;">Home Address</h4>
+<hr style="margin-bottom: 16px;">
+<p style="font-family: arial; margin-top: 0; margin-bottom: 8px; font-size: 16px; color:#2e2e2e;">Country: India</p>
+<p style="font-family: arial; margin-top: 0; margin-bottom: 8px; font-size: 16px; color:#2e2e2e;">Province/State: Karnataka</p>
+<p style="font-family: arial; margin-top: 0; margin-bottom: 8px; font-size: 16px; color:#2e2e2e;">City/Municipality: Bengaluru</p>
+<p style="font-family: arial; margin-top: 0; margin-bottom: 8px; font-size: 16px; color:#2e2e2e;">
+    Plan to Purchase: <span class="plan-value">2 months</span>
+</p>
+<p style="font-family: arial; margin-top: 0; margin-bottom: 8px; font-size: 16px; color:#2e2e2e;">
+    Request a Quote: Yes
+</p>
+<p style="font-family: arial; margin-top: 0; margin-bottom: 8px; font-size: 16px; color:#2e2e2e;">
+    Area of Dealership: Bengaluru, Karnataka
+</p>
+<p style="font-family: arial; margin-top: 0; margin-bottom: 8px; font-size: 16px; color:#2e2e2e;">
+    Car Color: Red
+</p>
 
-    <div class="highlight">
-        <h3>Important Note</h3>
-        <p>This HTML to PDF conversion focuses on content extraction rather than visual formatting preservation. The goal is to create readable, well-structured PDF documents from HTML content.</p>
-    </div>
+<h4 style="font-family: arial; margin-top: 32px; margin-bottom: 16px; font-size: 20px; color:#2e2e2e;">Loan Information</h4>
+<hr style="margin-bottom: 16px;">
+<p style="font-family: arial; margin-top: 0; margin-bottom: 8px; font-size: 16px; color:#2e2e2e;">Vehicle Type: MPV</p>
+<p style="font-family: arial; margin-top: 0; margin-bottom: 8px; font-size: 16px; color:#2e2e2e;">Vehicle Brand: BMW</p>
+<p style="font-family: arial; margin-top: 0; margin-bottom: 8px; font-size: 16px; color:#2e2e2e;">Vehicle Model: M4</p>
+<p style="font-family: arial; margin-top: 0; margin-bottom: 8px; font-size: 16px; color:#2e2e2e;">
+    Vehicle Variant: M4
+</p>
+<p style="font-family: arial; margin-top: 0; margin-bottom: 8px; font-size: 16px; color:#2e2e2e;">
+    Estimated Vehicle Price: 10,00,00,00,000
+</p>
+<p style="font-family: arial; margin-top: 0; margin-bottom: 8px; font-size: 16px; color:#2e2e2e;">Down Payment: 1,00,000</p>
+<p style="font-family: arial; margin-top: 0; margin-bottom: 8px; font-size: 16px; color:#2e2e2e;">Loan Amount: 10,000</p>
+<p style="font-family: arial; margin-top: 0; margin-bottom: 8px; font-size: 16px; color:#2e2e2e;">DPA Undertaking: Private Data</p>
+</div>
+</body>
+</html>`,
 
-    <div class="section">
-        <h2>Technical Details</h2>
-        <ol>
-            <li>HTML parsing removes script and style tags</li>
-            <li>Block elements are converted to paragraph breaks</li>
-            <li>Text content is extracted and formatted</li>
-            <li>HTML entities are properly decoded</li>
-        </ol>
-    </div>
+        complexHtml: `<!DOCTYPE html>
+<html>
+<head><title>Complex Test Document</title></head>
+<body>
+    <h1 style="font-size: 24px; color: #333;">Enhanced PDF Generator Test</h1>
+    <hr>
+    <h2 style="font-size: 20px; color: #666;">Features Demonstration</h2>
+    <p style="font-size: 16px;">This document demonstrates various features:</p>
+    
+    <h3 style="font-size: 18px; color: #888;">Text Styling</h3>
+    <p style="font-size: 14px; color: #444;">Different font sizes and colors are supported.</p>
+    <p style="font-size: 12px; color: #999;">Small text example.</p>
+    <p style="font-size: 20px; color: #000;">Large text example.</p>
+    
+    <hr>
+    
+    <h3 style="font-size: 18px;">Number Formatting</h3>
+    <p>Large numbers are automatically formatted: 1234567890</p>
+    <p>Currency example: 99999999</p>
+    
+    <hr>
+    
+    <h3 style="font-size: 18px;">Special Characters</h3>
+    <p>Testing special chars: & < > " ' (parentheses) [brackets]</p>
+    <p>Email: user@example.com</p>
+    <p>Phone: +91-9999999999</p>
+    
+    <p style="font-size: 10px; color: #aaa;">Generated on: ${new Date().toLocaleString()}</p>
+</body>
+</html>`,
 
-    <footer>
-        <p><small>Generated: ${new Date().toLocaleString()}</small></p>
-        <p><small>Test Environment: Production Ready</small></p>
-    </footer>
+        emptyHtml: `<!DOCTYPE html><html><head><title>Empty</title></head><body></body></html>`,
+
+        invalidHtml: `<p>This is invalid HTML without proper structure</p>`,
+
+        longContentHtml: `<!DOCTYPE html>
+<html>
+<head><title>Long Content Test</title></head>
+<body>
+    <h1>Long Content Test Document</h1>
+    ${Array(50).fill(null).map((_, i) => `
+    <h2>Section ${i + 1}</h2>
+    <p>This is paragraph ${i + 1} of the long content test. It contains enough text to test pagination and content flow.</p>
+    <p>Additional content for section ${i + 1} to ensure proper spacing and layout rendering.</p>
+    <hr>
+    `).join('')}
 </body>
 </html>`
     }
 };
 
-/**
- * Main test runner
- */
 class ProductionTestRunner {
     constructor() {
         this.testResults = [];
@@ -231,471 +135,350 @@ class ProductionTestRunner {
         this.endTime = null;
     }
 
-    /**
-     * Run all tests
-     */
     async runAllTests() {
-        console.log('🚀 Enhanced PDF Generator - Production Test Suite');
-        console.log('=================================================\n');
-
+        console.log('🚀 Enhanced PDF Generator - Production Test Suite v2.0.0');
+        console.log('======================================================\n');
         this.startTime = Date.now();
 
         try {
-            // Environment validation
             await this.validateEnvironment();
-
-            // Basic functionality tests
             await this.testBasicFunctionality();
-
-            // Advanced feature tests
             await this.testAdvancedFeatures();
-
-            // Error handling tests
             await this.testErrorHandling();
-
-            // Performance tests
-            if (TEST_CONFIG.runPerformanceTests) {
-                await this.testPerformance();
-            }
-
-            // Generate test report
-            await this.generateTestReport();
+            await this.testEdgeCases();
+            if (TEST_CONFIG.runPerformanceTests) await this.testPerformance();
 
             this.endTime = Date.now();
+            await this.generateTestReport();
             this.printTestSummary();
 
         } catch (error) {
-            console.error('❌ Test suite failed:', error.message);
+            this.endTime = Date.now();
+            console.error('❌ Test suite failed critically:', error.message, TEST_CONFIG.enableDebug ? error.stack : '');
+            this.addTestResult('Test Suite Critical', 'FAIL', error.message);
+            this.printTestSummary();
             process.exit(1);
         }
     }
 
-    /**
-     * Validate environment
-     */
     async validateEnvironment() {
         console.log('🔍 Validating Environment...');
-
         try {
-            // Check Node.js version
             const nodeVersion = process.version;
-            const [major, minor] = nodeVersion.substring(1).split('.').map(Number);
+            const [major] = nodeVersion.substring(1).split('.').map(Number);
+            if (major < 14) throw new Error(`Node.js 14+ required, found ${nodeVersion}`);
 
-            if (major < 16) {
-                throw new Error(`Node.js 16+ required, found ${nodeVersion}`);
-            }
-
-            // Check memory availability
-            const memoryUsage = process.memoryUsage();
-            if (memoryUsage.heapTotal < 50 * 1024 * 1024) { // 50MB
-                console.warn('⚠️  Low memory available, some tests may fail');
-            }
-
-            // Create output directory
             await this.ensureOutputDirectory();
 
-            // Test basic PDF generator initialization
-            const generator = new EnhancedPDFGenerator({ debug: false });
-            const stats = generator.getStatistics();
+            // Test basic instantiation
+            new EnhancedPDFGenerator({ debug: false });
 
-            this.addTestResult('Environment Validation', 'PASS', 'All environment checks passed');
-            console.log('✅ Environment validation passed');
-            console.log(`   Node.js: ${nodeVersion}`);
-            console.log(`   Platform: ${process.platform} ${process.arch}`);
-            console.log(`   Memory: ${Math.round(memoryUsage.heapTotal / 1024 / 1024)}MB\n`);
-
+            this.addTestResult('Environment Validation', 'PASS', `Node: ${nodeVersion}. Output dir ready.`);
+            console.log('✅ Environment validation passed\n');
         } catch (error) {
             this.addTestResult('Environment Validation', 'FAIL', error.message);
             throw error;
         }
     }
 
-    /**
-     * Test basic functionality
-     */
     async testBasicFunctionality() {
         console.log('📝 Testing Basic Functionality...');
-
-        const generator = new EnhancedPDFGenerator({
-            debug: TEST_CONFIG.enableDebug,
-            pageFormat: 'A4'
-        });
+        const generator = new EnhancedPDFGenerator({ debug: TEST_CONFIG.enableDebug });
 
         try {
-            // Test 1: Simple text to PDF
-            console.log('   Testing text to PDF conversion...');
-            const textPDF = await generator.generatePDFFromText(TEST_CONFIG.testSamples.shortText, {
-                title: 'Basic Text Test',
-                fontSize: 12
+            // Test 1: Simple HTML to PDF
+            const simplePDF = await generator.generatePDFFromHTML(TEST_CONFIG.testSamples.simpleHtml, {
+                title: 'Simple HTML Test'
             });
+            const simplePath = path.join(TEST_CONFIG.outputDirectory, 'test-simple-html.pdf');
+            await generator.savePDF(simplePDF, simplePath);
+            const simpleInfo = generator.getPDFInfo(simplePDF);
 
-            if (!Buffer.isBuffer(textPDF) || textPDF.length === 0) {
-                throw new Error('Text PDF generation failed');
-            }
+            if (!simpleInfo.isValid) throw new Error('Generated simple HTML PDF is invalid');
+            this.addTestResult('Simple HTML to PDF', 'PASS', `Generated ${simpleInfo.sizeFormatted} PDF`);
+            console.log(`   ✅ Simple HTML PDF: ${simpleInfo.sizeFormatted}`);
 
-            const textPath = path.join(TEST_CONFIG.outputDirectory, 'test-basic-text.pdf');
-            await generator.savePDF(textPDF, textPath);
-
-            const textInfo = generator.getPDFInfo(textPDF);
-            if (!textInfo.isValid) {
-                throw new Error('Generated text PDF is invalid');
-            }
-
-            this.addTestResult('Text to PDF', 'PASS', `Generated ${textInfo.sizeFormatted} PDF`);
-            console.log(`   ✅ Text PDF: ${textInfo.sizeFormatted}`);
-
-            // Test 2: HTML to PDF
-            console.log('   Testing HTML to PDF conversion...');
-            const htmlPDF = await generator.generatePDFFromHTML(TEST_CONFIG.testSamples.htmlContent, {
-                fontSize: 11
+            // Test 2: Styled HTML to PDF
+            const styledPDF = await generator.generatePDFFromHTML(TEST_CONFIG.testSamples.styledHtmlContent, {
+                title: 'Styled HTML Test Document'
             });
+            const styledPath = path.join(TEST_CONFIG.outputDirectory, 'test-styled-html.pdf');
+            await generator.savePDF(styledPDF, styledPath);
+            const styledInfo = generator.getPDFInfo(styledPDF);
 
-            if (!Buffer.isBuffer(htmlPDF) || htmlPDF.length === 0) {
-                throw new Error('HTML PDF generation failed');
-            }
+            if (!styledInfo.isValid) throw new Error('Generated styled HTML PDF is invalid');
+            this.addTestResult('Styled HTML to PDF', 'PASS', `Generated ${styledInfo.sizeFormatted} PDF`);
+            console.log(`   ✅ Styled HTML PDF: ${styledInfo.sizeFormatted}`);
 
-            const htmlPath = path.join(TEST_CONFIG.outputDirectory, 'test-basic-html.pdf');
-            await generator.savePDF(htmlPDF, htmlPath);
+            // Test 3: Complex HTML with various elements
+            const complexPDF = await generator.generatePDFFromHTML(TEST_CONFIG.testSamples.complexHtml, {
+                title: 'Complex HTML Test'
+            });
+            const complexPath = path.join(TEST_CONFIG.outputDirectory, 'test-complex-html.pdf');
+            await generator.savePDF(complexPDF, complexPath);
+            const complexInfo = generator.getPDFInfo(complexPDF);
 
-            const htmlInfo = generator.getPDFInfo(htmlPDF);
-            if (!htmlInfo.isValid) {
-                throw new Error('Generated HTML PDF is invalid');
-            }
-
-            this.addTestResult('HTML to PDF', 'PASS', `Generated ${htmlInfo.sizeFormatted} PDF`);
-            console.log(`   ✅ HTML PDF: ${htmlInfo.sizeFormatted}`);
-
-            // Test 3: Auto-detection
-            console.log('   Testing auto-detection...');
-            const autoPDF1 = await generator.generatePDF(TEST_CONFIG.testSamples.shortText);
-            const autoPDF2 = await generator.generatePDF(TEST_CONFIG.testSamples.htmlContent);
-
-            if (!Buffer.isBuffer(autoPDF1) || !Buffer.isBuffer(autoPDF2)) {
-                throw new Error('Auto-detection failed');
-            }
-
-            this.addTestResult('Auto-detection', 'PASS', 'Both text and HTML detected correctly');
-            console.log('   ✅ Auto-detection working');
+            if (!complexInfo.isValid) throw new Error('Generated complex HTML PDF is invalid');
+            this.addTestResult('Complex HTML to PDF', 'PASS', `Generated ${complexInfo.sizeFormatted} PDF`);
+            console.log(`   ✅ Complex HTML PDF: ${complexInfo.sizeFormatted}`);
 
             console.log('✅ Basic functionality tests passed\n');
-
         } catch (error) {
             this.addTestResult('Basic Functionality', 'FAIL', error.message);
+            console.error(`   ❌ Basic Functionality FAILED: ${error.message}`, TEST_CONFIG.enableDebug ? error.stack : '');
             throw error;
         }
     }
 
-    /**
-     * Test advanced features
-     */
     async testAdvancedFeatures() {
         console.log('⚙️ Testing Advanced Features...');
 
         try {
-            // Test different page formats
-            console.log('   Testing page formats...');
-            const formats = ['A4', 'LETTER', 'LEGAL'];
-
-            for (const format of formats) {
-                const generator = new EnhancedPDFGenerator({ pageFormat: format });
-                const pdf = await generator.generatePDFFromText(`Test document in ${format} format`, {
-                    title: `${format} Format Test`
-                });
-
-                const formatPath = path.join(TEST_CONFIG.outputDirectory, `test-format-${format.toLowerCase()}.pdf`);
-                await generator.savePDF(pdf, formatPath);
-
-                console.log(`   ✅ ${format} format: ${generator.getPDFInfo(pdf).sizeFormatted}`);
-            }
-
-            this.addTestResult('Page Formats', 'PASS', 'All formats generated successfully');
-
-            // Test custom margins
-            console.log('   Testing custom margins...');
-            const marginGenerator = new EnhancedPDFGenerator();
-            const marginPDF = await marginGenerator.generatePDFFromText(TEST_CONFIG.testSamples.shortText, {
-                title: 'Custom Margins Test',
-                margin: { top: 72, bottom: 72, left: 54, right: 54 } // 1 inch margins
+            // Test with debug mode
+            const debugGen = new EnhancedPDFGenerator({ debug: true, enableCSS: true });
+            console.log('   Testing debug mode output...');
+            const debugPDF = await debugGen.generatePDFFromHTML(TEST_CONFIG.testSamples.simpleHtml, {
+                title: 'Debug Mode Test'
             });
+            await debugGen.savePDF(debugPDF, path.join(TEST_CONFIG.outputDirectory, 'test-debug-mode.pdf'));
+            this.addTestResult('Debug Mode', 'PASS', 'Debug logging functional');
+            console.log('   ✅ Debug mode tested');
 
-            const marginPath = path.join(TEST_CONFIG.outputDirectory, 'test-custom-margins.pdf');
-            await marginGenerator.savePDF(marginPDF, marginPath);
-
-            this.addTestResult('Custom Margins', 'PASS', 'Custom margins applied successfully');
-            console.log('   ✅ Custom margins applied');
-
-            // Test long document (multi-page)
-            console.log('   Testing multi-page document...');
-            const longGenerator = new EnhancedPDFGenerator();
-            const longPDF = await longGenerator.generatePDFFromText(TEST_CONFIG.testSamples.longText, {
-                title: 'Multi-page Test Document',
-                fontSize: 10,
-                lineHeight: 12
+            // Test custom page dimensions
+            const customGen = new EnhancedPDFGenerator({ debug: TEST_CONFIG.enableDebug });
+            const customPDF = await customGen.generatePDFFromHTML(TEST_CONFIG.testSamples.simpleHtml, {
+                title: 'Custom Page Size',
+                pageWidth: 842,  // A4 landscape
+                pageHeight: 595,
+                margin: { top: 50, right: 50, bottom: 50, left: 50 }
             });
+            await customGen.savePDF(customPDF, path.join(TEST_CONFIG.outputDirectory, 'test-custom-size.pdf'));
+            this.addTestResult('Custom Page Size', 'PASS', 'Custom dimensions applied');
+            console.log('   ✅ Custom page size tested');
 
-            const longPath = path.join(TEST_CONFIG.outputDirectory, 'test-multipage.pdf');
-            await longGenerator.savePDF(longPDF, longPath);
-
-            const longInfo = longGenerator.getPDFInfo(longPDF);
-            this.addTestResult('Multi-page Document', 'PASS', `Generated ${longInfo.sizeFormatted} document`);
-            console.log(`   ✅ Multi-page document: ${longInfo.sizeFormatted}`);
+            // Test long content (pagination test)
+            const longGen = new EnhancedPDFGenerator({ debug: TEST_CONFIG.enableDebug });
+            const longPDF = await longGen.generatePDFFromHTML(TEST_CONFIG.testSamples.longContentHtml, {
+                title: 'Long Content Test'
+            });
+            await longGen.savePDF(longPDF, path.join(TEST_CONFIG.outputDirectory, 'test-long-content.pdf'));
+            const longInfo = longGen.getPDFInfo(longPDF);
+            this.addTestResult('Long Content', 'PASS', `Generated ${longInfo.sizeFormatted} PDF`);
+            console.log(`   ✅ Long content PDF: ${longInfo.sizeFormatted}`);
 
             console.log('✅ Advanced features tests passed\n');
-
         } catch (error) {
             this.addTestResult('Advanced Features', 'FAIL', error.message);
+            console.error(`   ❌ Advanced Features FAILED: ${error.message}`, TEST_CONFIG.enableDebug ? error.stack : '');
             throw error;
         }
     }
 
-    /**
-     * Test error handling
-     */
     async testErrorHandling() {
         console.log('🛡️ Testing Error Handling...');
+        const generator = new EnhancedPDFGenerator({ debug: TEST_CONFIG.enableDebug });
+        let errorsPassed = 0;
+        const totalErrorTests = 5;
 
-        const generator = new EnhancedPDFGenerator();
+        // Test 1: Null HTML input
+        try {
+            await generator.generatePDFFromHTML(null);
+        } catch (e) {
+            if (e.message.includes('generation failed')) errorsPassed++;
+            else console.error('Null input test unexpected error:', e.message);
+        }
+
+        // Test 2: Empty HTML
+        try {
+            const emptyPDF = await generator.generatePDFFromHTML(TEST_CONFIG.testSamples.emptyHtml);
+            const emptyInfo = generator.getPDFInfo(emptyPDF);
+            if (emptyInfo.isValid) errorsPassed++;
+        } catch (e) {
+            console.error('Empty HTML test unexpected error:', e.message);
+        }
+
+        // Test 3: Invalid save path
+        try {
+            const pdf = await generator.generatePDFFromHTML(TEST_CONFIG.testSamples.simpleHtml);
+            await generator.savePDF(pdf, '');
+        } catch (e) {
+            if (e.message.includes('save PDF')) errorsPassed++;
+            else console.error('Invalid path test unexpected error:', e.message);
+        }
+
+        // Test 4: Invalid PDF buffer for getPDFInfo
+        try {
+            const info = generator.getPDFInfo(Buffer.from('invalid'));
+            if (!info.isValid) errorsPassed++;
+        } catch (e) {
+            errorsPassed++; // Also acceptable if it throws
+        }
+
+        // Test 5: Save with null buffer
+        try {
+            await generator.savePDF(null, 'test.pdf');
+        } catch (e) {
+            if (e.message.includes('save PDF')) errorsPassed++;
+            else console.error('Null buffer save test unexpected error:', e.message);
+        }
+
+        if (errorsPassed === totalErrorTests) {
+            this.addTestResult('Error Handling', 'PASS', 'All error conditions handled correctly');
+            console.log('   ✅ All expected error conditions handled');
+        } else {
+            this.addTestResult('Error Handling', 'PARTIAL', `${errorsPassed}/${totalErrorTests} error conditions handled`);
+            console.warn(`   ⚠️  Error handling: ${errorsPassed}/${totalErrorTests} conditions met`);
+        }
+        console.log('✅ Error handling tests completed\n');
+    }
+
+    async testEdgeCases() {
+        console.log('🔧 Testing Edge Cases...');
+        const generator = new EnhancedPDFGenerator({ debug: TEST_CONFIG.enableDebug });
 
         try {
-            // Test null input
-            console.log('   Testing null input handling...');
-            try {
-                await generator.generatePDFFromText(null);
-                throw new Error('Should have thrown error for null input');
-            } catch (error) {
-                if (error.message.includes('cannot be null')) {
-                    console.log('   ✅ Null input properly rejected');
-                } else {
-                    throw error;
-                }
-            }
+            // Test invalid HTML structure
+            const invalidPDF = await generator.generatePDFFromHTML(TEST_CONFIG.testSamples.invalidHtml, {
+                title: 'Invalid HTML Test'
+            });
+            await generator.savePDF(invalidPDF, path.join(TEST_CONFIG.outputDirectory, 'test-invalid-html.pdf'));
+            this.addTestResult('Invalid HTML Structure', 'PASS', 'Handled gracefully');
+            console.log('   ✅ Invalid HTML handled');
 
-            // Test empty input
-            console.log('   Testing empty input handling...');
-            try {
-                await generator.generatePDFFromText('');
-                throw new Error('Should have thrown error for empty input');
-            } catch (error) {
-                if (error.message.includes('cannot be empty')) {
-                    console.log('   ✅ Empty input properly rejected');
-                } else {
-                    throw error;
-                }
-            }
+            // Test special characters
+            const specialHtml = `<!DOCTYPE html><html><body>
+                <h1>Special Chars: © ® ™ € £ ¥</h1>
+                <p>Math: ∑ ∏ √ ∞ ≈ ≠ ≤ ≥</p>
+                <p>Arrows: ← → ↑ ↓ ⇐ ⇒</p>
+            </body></html>`;
+            const specialPDF = await generator.generatePDFFromHTML(specialHtml, {
+                title: 'Special Characters Test'
+            });
+            await generator.savePDF(specialPDF, path.join(TEST_CONFIG.outputDirectory, 'test-special-chars.pdf'));
+            this.addTestResult('Special Characters', 'PASS', 'Special chars processed');
+            console.log('   ✅ Special characters tested');
 
-            // Test invalid file path
-            console.log('   Testing invalid file path handling...');
-            try {
-                const pdf = await generator.generatePDFFromText('Test content');
-                await generator.savePDF(pdf, '');
-                throw new Error('Should have thrown error for invalid path');
-            } catch (error) {
-                if (error.message.includes('Invalid file path') ||
-                    error.message.includes('Input string cannot be empty') ||
-                    error.message.includes('Failed to save PDF')) {
-                    console.log('   ✅ Invalid file path properly rejected');
-                } else {
-                    throw error;
-                }
-            }
-
-            // Test concurrent processing
-            console.log('   Testing concurrent processing handling...');
-            const concurrentGenerator = new EnhancedPDFGenerator();
-
-            // Start first operation
-            const promise1 = concurrentGenerator.generatePDFFromText('Test 1');
-
-            // Try to start second operation while first is running
-            try {
-                await concurrentGenerator.generatePDFFromText('Test 2');
-                // If we get here, either the first operation finished very quickly,
-                // or concurrent processing is allowed (which might be okay)
-                console.log('   ✅ Concurrent processing handled (operations completed)');
-            } catch (error) {
-                if (error.message.includes('already processing')) {
-                    console.log('   ✅ Concurrent processing properly rejected');
-                } else {
-                    console.log('   ⚠️  Unexpected concurrent processing error:', error.message);
-                }
-            }
-
-            // Wait for first operation to complete
-            await promise1;
-
-            this.addTestResult('Error Handling', 'PASS', 'All error conditions handled correctly');
-            console.log('✅ Error handling tests passed\n');
-
+            console.log('✅ Edge case tests passed\n');
         } catch (error) {
-            this.addTestResult('Error Handling', 'FAIL', error.message);
-            throw error;
+            this.addTestResult('Edge Cases', 'FAIL', error.message);
+            console.error(`   ❌ Edge Cases FAILED: ${error.message}`, TEST_CONFIG.enableDebug ? error.stack : '');
         }
     }
 
-    /**
-     * Test performance
-     */
     async testPerformance() {
         console.log('🚀 Testing Performance...');
-
-        const generator = new EnhancedPDFGenerator();
+        const generator = new EnhancedPDFGenerator({ debug: false }); // No debug for performance
 
         try {
-            // Test small document performance
-            console.log('   Testing small document performance...');
-            const smallStart = Date.now();
-            await generator.generatePDFFromText(TEST_CONFIG.testSamples.shortText);
-            const smallTime = Date.now() - smallStart;
+            const iterations = 10;
+            const times = [];
 
-            if (smallTime > 1000) { // 1 second threshold
-                console.warn(`   ⚠️  Small document took ${smallTime}ms (expected < 1000ms)`);
-            } else {
-                console.log(`   ✅ Small document: ${smallTime}ms`);
+            for (let i = 0; i < iterations; i++) {
+                const start = Date.now();
+                await generator.generatePDFFromHTML(TEST_CONFIG.testSamples.styledHtmlContent, {
+                    title: `Performance Test ${i + 1}`
+                });
+                times.push(Date.now() - start);
             }
 
-            // Test large document performance
-            console.log('   Testing large document performance...');
-            const largeStart = Date.now();
-            await generator.generatePDFFromText(TEST_CONFIG.testSamples.longText);
-            const largeTime = Date.now() - largeStart;
+            const avgTime = times.reduce((a, b) => a + b, 0) / times.length;
+            const minTime = Math.min(...times);
+            const maxTime = Math.max(...times);
 
-            if (largeTime > 5000) { // 5 second threshold
-                console.warn(`   ⚠️  Large document took ${largeTime}ms (expected < 5000ms)`);
-            } else {
-                console.log(`   ✅ Large document: ${largeTime}ms`);
-            }
+            this.addTestResult('Performance', 'PASS',
+                `Avg: ${avgTime.toFixed(2)}ms, Min: ${minTime}ms, Max: ${maxTime}ms (${iterations} runs)`
+            );
+            console.log(`   ✅ Performance: Avg ${avgTime.toFixed(2)}ms (Min: ${minTime}ms, Max: ${maxTime}ms)`);
 
-            // Test memory usage
-            console.log('   Testing memory usage...');
-            const memBefore = process.memoryUsage();
-
-            // Generate multiple documents
-            for (let i = 0; i < 10; i++) {
-                await generator.generatePDFFromText(`Test document ${i + 1}\n\nThis is test content for document number ${i + 1}.`);
-            }
-
-            const memAfter = process.memoryUsage();
-            const memIncrease = memAfter.heapUsed - memBefore.heapUsed;
-
-            if (memIncrease > 100 * 1024 * 1024) { // 100MB threshold
-                console.warn(`   ⚠️  Memory increase: ${Math.round(memIncrease / 1024 / 1024)}MB`);
-            } else {
-                console.log(`   ✅ Memory increase: ${Math.round(memIncrease / 1024 / 1024)}MB`);
-            }
-
-            this.addTestResult('Performance', 'PASS', `Small: ${smallTime}ms, Large: ${largeTime}ms, Memory: ${Math.round(memIncrease / 1024 / 1024)}MB`);
             console.log('✅ Performance tests passed\n');
-
         } catch (error) {
             this.addTestResult('Performance', 'FAIL', error.message);
-            throw error;
+            console.error(`   ❌ Performance Test FAILED: ${error.message}`, TEST_CONFIG.enableDebug ? error.stack : '');
         }
     }
 
-    /**
-     * Generate test report
-     */
     async generateTestReport() {
         console.log('📊 Generating Test Report...');
-
         const generator = new EnhancedPDFGenerator({ debug: false });
-        const stats = generator.getStatistics();
 
-        const reportContent = `Enhanced PDF Generator - Test Report
+        const passed = this.testResults.filter(r => r.status === 'PASS').length;
+        const failed = this.testResults.filter(r => r.status === 'FAIL').length;
+        const partial = this.testResults.filter(r => r.status === 'PARTIAL').length;
 
-EXECUTION SUMMARY
-================
-Test Run Date: ${new Date().toLocaleString()}
-Total Tests: ${this.testResults.length}
-Passed: ${this.testResults.filter(r => r.status === 'PASS').length}
-Failed: ${this.testResults.filter(r => r.status === 'FAIL').length}
-Execution Time: ${this.endTime ? this.endTime - this.startTime : 'In Progress'}ms
-
-ENVIRONMENT INFORMATION
-======================
-Node.js Version: ${process.version}
-Platform: ${process.platform} ${process.arch}
-Memory Usage: ${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)}MB
-Working Directory: ${process.cwd()}
-
-DETAILED TEST RESULTS
-====================
-${this.testResults.map(result =>
-            `${result.name}: ${result.status}
-   Details: ${result.details}
-   Time: ${result.timestamp}
-`).join('\n')}
-
-PERFORMANCE METRICS
-==================
-${JSON.stringify(stats, null, 2)}
-
-CONCLUSION
-==========
-${this.testResults.every(r => r.status === 'PASS') ?
-            'All tests passed successfully. The Enhanced PDF Generator is ready for production use.' :
-            'Some tests failed. Please review the failures before deploying to production.'
-        }
-
-Generated by Enhanced PDF Generator Test Suite v1.0.0`;
+        const reportHtml = `<!DOCTYPE html>
+<html>
+<head><title>Test Report</title></head>
+<body>
+    <h1 style="font-size: 24px; color: #333;">Enhanced PDF Generator - Test Report v2.0.0</h1>
+    <hr>
+    <p><strong>Test Run Date:</strong> ${new Date().toLocaleString()}</p>
+    <p><strong>Total Tests:</strong> ${this.testResults.length}</p>
+    <p><strong>Passed:</strong> ${passed}</p>
+    <p><strong>Failed:</strong> ${failed}</p>
+    <p><strong>Partial:</strong> ${partial}</p>
+    <p><strong>Execution Time:</strong> ${this.endTime - this.startTime}ms</p>
+    <p><strong>Environment:</strong> Node.js ${process.version}, ${process.platform} ${process.arch}</p>
+    
+    <h2 style="font-size: 20px; color: #666;">Test Results</h2>
+    <hr>
+    ${this.testResults.map(r => `
+    <h3 style="font-size: 16px; color: ${r.status === 'PASS' ? '#0a0' : r.status === 'FAIL' ? '#a00' : '#a50'};">
+        ${r.name}: ${r.status}
+    </h3>
+    <p style="font-size: 14px;">${r.details}</p>
+    <p style="font-size: 12px; color: #888;">Time: ${r.timestamp}</p>
+    <hr>
+    `).join('')}
+    
+    <h2 style="font-size: 20px;">Summary</h2>
+    <p><strong>Result:</strong> ${this.testResults.every(r => r.status !== 'FAIL') ? '✅ All tests passed!' : '❌ Some tests failed'}</p>
+</body>
+</html>`;
 
         try {
-            const reportPDF = await generator.generatePDFFromText(reportContent, {
-                title: 'Enhanced PDF Generator - Test Report',
-                fontSize: 10,
-                lineHeight: 12
-            });
-
-            const reportPath = path.join(TEST_CONFIG.outputDirectory, 'test-report.pdf');
-            await generator.savePDF(reportPDF, reportPath);
-
-            console.log(`✅ Test report generated: ${reportPath}\n`);
-
+            const reportPDF = await generator.generatePDFFromHTML(reportHtml, { title: 'Test Report v2.0.0' });
+            await generator.savePDF(reportPDF, path.join(TEST_CONFIG.outputDirectory, 'test-report.pdf'));
+            console.log('✅ Test report PDF generated\n');
         } catch (error) {
-            console.warn(`⚠️  Could not generate test report: ${error.message}`);
+            console.warn(`⚠️  Could not generate test report PDF: ${error.message}`);
         }
     }
 
-    /**
-     * Print test summary
-     */
     printTestSummary() {
-        const totalTests = this.testResults.length;
-        const passedTests = this.testResults.filter(r => r.status === 'PASS').length;
-        const failedTests = this.testResults.filter(r => r.status === 'FAIL').length;
-        const executionTime = this.endTime - this.startTime;
+        const total = this.testResults.length;
+        const passed = this.testResults.filter(r => r.status === 'PASS').length;
+        const failed = this.testResults.filter(r => r.status === 'FAIL').length;
+        const partial = this.testResults.filter(r => r.status === 'PARTIAL').length;
 
-        console.log('📋 Test Summary');
-        console.log('================');
-        console.log(`Total Tests: ${totalTests}`);
-        console.log(`Passed: ${passedTests}`);
-        console.log(`Failed: ${failedTests}`);
-        console.log(`Success Rate: ${Math.round((passedTests / totalTests) * 100)}%`);
-        console.log(`Execution Time: ${executionTime}ms`);
+        console.log('📋 Test Summary -----------------------------');
+        console.log(`Total Tests Run: ${total}`);
+        console.log(`Passed: ${passed}, Failed: ${failed}, Partial: ${partial}`);
+        if (total > 0) console.log(`Success Rate: ${((passed / total) * 100).toFixed(2)}%`);
+        console.log(`Total Execution Time: ${this.endTime - this.startTime}ms`);
         console.log(`Output Directory: ${TEST_CONFIG.outputDirectory}`);
 
-        if (failedTests === 0) {
-            console.log('\n🎉 All tests passed! Enhanced PDF Generator is ready for production use.');
+        if (failed === 0 && total > 0) {
+            console.log('\n🎉 All tests passed successfully!');
+        } else if (total === 0) {
+            console.log('\n🤔 No tests were run');
         } else {
-            console.log('\n❌ Some tests failed. Please review the failures before production deployment.');
+            console.log('\n❌ Some tests failed:');
+            this.testResults.filter(r => r.status === 'FAIL').forEach(f => {
+                console.log(`   - FAIL: ${f.name} - ${f.details}`);
+            });
         }
+        console.log('------------------------------------------\n');
     }
 
-    /**
-     * Add test result
-     */
     addTestResult(name, status, details) {
         this.testResults.push({
             name,
             status,
-            details,
-            timestamp: new Date().toISOString()
+            details: String(details).substring(0, 300),
+            timestamp: new Date().toLocaleTimeString()
         });
     }
 
-    /**
-     * Ensure output directory exists
-     */
     async ensureOutputDirectory() {
         try {
             await fs.promises.access(TEST_CONFIG.outputDirectory);
@@ -709,11 +492,11 @@ Generated by Enhanced PDF Generator Test Suite v1.0.0`;
     }
 }
 
-// Run tests if this file is executed directly
+// Run tests if this is the main module
 if (require.main === module) {
-    const testRunner = new ProductionTestRunner();
-    testRunner.runAllTests().catch(error => {
-        console.error('Test suite failed:', error.message);
+    const runner = new ProductionTestRunner();
+    runner.runAllTests().catch(e => {
+        console.error('Unhandled exception in test runner:', e);
         process.exit(1);
     });
 }

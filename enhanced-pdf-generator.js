@@ -4,8 +4,8 @@
  * A comprehensive, zero-dependency PDF generator for Node.js applications
  * Supports both plain text and HTML content conversion to PDF
  *
- * @version 1.0.0
- * @author Enhanced Development Team
+ * @version 2.0.0
+ * @author Tushar Kar
  * @license MIT
  *
  * Requirements:
@@ -21,966 +21,467 @@
  * - Production-ready error handling
  * - Memory-efficient processing
  * - Cross-platform compatibility
+ * Enhanced PDF Generator with CSS Support - COMPLETELY REWRITTEN FOR STABILITY
+ * Fixed approach with minimal complexity to prevent PDF corruption
  */
 
-'use strict';
+const fs = require('fs').promises;
 
-const fs = require('fs');
-const path = require('path');
-const os = require('os');
-
-// Constants
-const PDF_VERSION = '1.4';
-const DEFAULT_PAGE_WIDTH = 595;  // A4 width in points
-const DEFAULT_PAGE_HEIGHT = 842; // A4 height in points
-const DEFAULT_MARGIN = 50;
-const DEFAULT_FONT_SIZE = 12;
-const DEFAULT_LINE_HEIGHT = 15;
-const MAX_CONTENT_SIZE = 50 * 1024 * 1024; // 50MB limit
-const MIN_NODE_VERSION = '16.0.0';
-
-// Supported page formats
-const PAGE_FORMATS = {
-    A4: { width: 595, height: 842 },
-    LETTER: { width: 612, height: 792 },
-    LEGAL: { width: 612, height: 1008 },
-    A3: { width: 842, height: 1191 },
-    TABLOID: { width: 792, height: 1224 }
-};
-
-/**
- * Enhanced PDF Generator Class
- */
 class EnhancedPDFGenerator {
-    /**
-     * Initialize the PDF generator
-     * @param {Object} options - Configuration options
-     * @param {number} options.pageWidth - Page width in points
-     * @param {number} options.pageHeight - Page height in points
-     * @param {number|Object} options.margin - Margin in points (number) or object with top,bottom,left,right
-     * @param {number} options.fontSize - Default font size
-     * @param {number} options.lineHeight - Line height in points
-     * @param {string} options.pageFormat - Page format (A4, LETTER, etc.)
-     * @param {boolean} options.debug - Enable debug logging
-     */
     constructor(options = {}) {
-        // Validate Node.js version
-        this._validateNodeVersion();
+        this.options = {
+            enableCSS: true,
+            debug: false,
+            ...options
+        };
 
-        // Set page format if specified
-        if (options.pageFormat && PAGE_FORMATS[options.pageFormat.toUpperCase()]) {
-            const format = PAGE_FORMATS[options.pageFormat.toUpperCase()];
-            options.pageWidth = format.width;
-            options.pageHeight = format.height;
+        if (this.options.debug) {
+            console.log('[INFO] Enhanced PDF Generator - STABLE VERSION initialized');
         }
-
-        // Configuration with defaults
-        this.config = {
-            pageWidth: this._validateNumber(options.pageWidth, DEFAULT_PAGE_WIDTH, 200, 2000),
-            pageHeight: this._validateNumber(options.pageHeight, DEFAULT_PAGE_HEIGHT, 200, 3000),
-            margin: this._parseMargin(options.margin || DEFAULT_MARGIN),
-            fontSize: this._validateNumber(options.fontSize, DEFAULT_FONT_SIZE, 6, 72),
-            lineHeight: this._validateNumber(options.lineHeight, DEFAULT_LINE_HEIGHT, 8, 100),
-            debug: Boolean(options.debug),
-            maxContentSize: options.maxContentSize || MAX_CONTENT_SIZE,
-            encoding: options.encoding || 'utf8'
-        };
-
-        // State management
-        this.state = {
-            isProcessing: false,
-            lastError: null,
-            documentsGenerated: 0,
-            totalProcessingTime: 0
-        };
-
-        // Performance tracking
-        this.performance = {
-            startTime: null,
-            endTime: null,
-            memoryUsage: null
-        };
-
-        this._log('Enhanced PDF Generator initialized', 'info');
     }
 
     /**
-     * Generate PDF from plain text content
-     * @param {string} textContent - Plain text content
-     * @param {Object} options - Generation options
-     * @returns {Promise<Buffer>} PDF buffer
+     * Generate PDF from HTML with maximum stability
      */
-    async generatePDFFromText(textContent, options = {}) {
-        this._startPerformanceTracking();
-
+    async generatePDFFromHTML(html, options = {}) {
         try {
-            this._validateInput(textContent, 'string');
-            this._checkProcessingState();
+            this._log('Starting HTML to PDF generation - STABLE APPROACH', 'info');
 
-            this.state.isProcessing = true;
-            this._log('Starting text to PDF generation', 'info');
+            // Default options
+            const pdfOptions = {
+                title: 'Document',
+                pageWidth: 612,
+                pageHeight: 792,
+                margin: { top: 72, right: 72, bottom: 72, left: 72 },
+                ...options
+            };
 
-            // Validate and sanitize options
-            const safeOptions = this._sanitizeOptions(options);
+            // Extract and clean content
+            const textContent = this._extractTextContent(html);
 
-            // Process text content
-            const processedLines = this._processTextToLines(textContent, safeOptions);
+            // Generate PDF using simple, stable approach
+            const pdfBuffer = this._generateStablePDF(textContent, pdfOptions);
 
-            // Generate PDF
-            const pdfBuffer = await this._createPDFDocument(
-                processedLines,
-                safeOptions.title || 'Text Document',
-                'text',
-                safeOptions
-            );
-
-            this._updateStatistics();
-            this._log(`Text PDF generated successfully (${pdfBuffer.length} bytes)`, 'info');
-
+            this._log('PDF generated successfully - STABLE VERSION', 'info');
             return pdfBuffer;
 
         } catch (error) {
-            this._handleError(error, 'generatePDFFromText');
+            this._log(`PDF generation failed: ${error.message}`, 'error');
             throw error;
-        } finally {
-            this.state.isProcessing = false;
-            this._endPerformanceTracking();
         }
     }
 
     /**
-     * Generate PDF from HTML content
-     * @param {string} htmlContent - HTML content
-     * @param {Object} options - Generation options
-     * @returns {Promise<Buffer>} PDF buffer
+     * Extract text content from HTML with proper structure preservation
+     * @private
      */
-    async generatePDFFromHTML(htmlContent, options = {}) {
-        this._startPerformanceTracking();
+    _extractTextContent(html) {
+        const content = [];
 
-        try {
-            this._validateInput(htmlContent, 'string');
-            this._checkProcessingState();
+        // Remove DOCTYPE, html, head, body tags but keep content
+        let cleanHtml = html
+            .replace(/<!DOCTYPE[^>]*>/gi, '')
+            .replace(/<html[^>]*>/gi, '')
+            .replace(/<\/html>/gi, '')
+            .replace(/<head[^>]*>[\s\S]*?<\/head>/gi, '')
+            .replace(/<body[^>]*>/gi, '')
+            .replace(/<\/body>/gi, '')
+            .replace(/<div[^>]*>/gi, '')
+            .replace(/<\/div>/gi, '');
 
-            this.state.isProcessing = true;
-            this._log('Starting HTML to PDF generation', 'info');
+        this._log(`Processing HTML: ${cleanHtml.substring(0, 200)}...`, 'debug');
 
-            // Validate and sanitize options
-            const safeOptions = this._sanitizeOptions(options);
+        // Use regex to find all elements with their content
+        const elementRegex = /<(h[1-6]|p|hr)([^>]*)>(.*?)<\/\1>|<(hr)[^>]*\/?>/gis;
+        let match;
 
-            // Extract title from HTML
-            const title = this._extractHTMLTitle(htmlContent) || safeOptions.title || 'HTML Document';
+        while ((match = elementRegex.exec(cleanHtml)) !== null) {
+            const tag = match[1] || match[4]; // h1-h6, p, or hr
+            const attributes = match[2] || '';
+            const innerContent = match[3] || '';
 
-            // Convert HTML to text
-            const textContent = this._convertHTMLToText(htmlContent);
+            this._log(`Found element: ${tag}, content: "${innerContent}"`, 'debug');
 
-            // Process text content
-            const processedLines = this._processTextToLines(textContent, safeOptions);
-
-            // Generate PDF
-            const pdfBuffer = await this._createPDFDocument(
-                processedLines,
-                title,
-                'html',
-                safeOptions
-            );
-
-            this._updateStatistics();
-            this._log(`HTML PDF generated successfully (${pdfBuffer.length} bytes)`, 'info');
-
-            return pdfBuffer;
-
-        } catch (error) {
-            this._handleError(error, 'generatePDFFromHTML');
-            throw error;
-        } finally {
-            this.state.isProcessing = false;
-            this._endPerformanceTracking();
-        }
-    }
-
-    /**
-     * Generate PDF with automatic content type detection
-     * @param {string} content - Content (text or HTML)
-     * @param {Object} options - Generation options
-     * @returns {Promise<Buffer>} PDF buffer
-     */
-    async generatePDF(content, options = {}) {
-        try {
-            this._validateInput(content, 'string');
-
-            const contentType = this._detectContentType(content);
-            this._log(`Auto-detected content type: ${contentType}`, 'debug');
-
-            if (contentType === 'html') {
-                return await this.generatePDFFromHTML(content, options);
-            } else {
-                return await this.generatePDFFromText(content, options);
+            if (tag === 'hr') {
+                content.push({
+                    type: 'line',
+                    marginTop: 12,
+                    marginBottom: 12
+                });
             }
+            else if (tag.match(/h[1-6]/i)) {
+                const text = this._extractText(innerContent);
+                const fontSize = this._extractFontSize(attributes) || 18;
+                const color = this._extractColor(attributes) || '#2e2e2e';
 
-        } catch (error) {
-            this._handleError(error, 'generatePDF');
-            throw error;
-        }
-    }
+                this._log(`Extracted heading text: "${text}"`, 'debug');
 
-    /**
-     * Save PDF buffer to file
-     * @param {Buffer} pdfBuffer - PDF buffer
-     * @param {string} filePath - Output file path
-     * @returns {Promise<string>} Saved file path
-     */
-    async savePDF(pdfBuffer, filePath) {
-        try {
-            this._validateInput(pdfBuffer, 'buffer');
-            this._validateInput(filePath, 'string');
-
-            // Validate file path
-            const sanitizedPath = this._sanitizeFilePath(filePath);
-
-            // Ensure directory exists
-            const directory = path.dirname(sanitizedPath);
-            await this._ensureDirectoryExists(directory);
-
-            // Write file
-            await this._writeFileAsync(sanitizedPath, pdfBuffer);
-
-            this._log(`PDF saved to: ${sanitizedPath}`, 'info');
-            return sanitizedPath;
-
-        } catch (error) {
-            this._handleError(error, 'savePDF');
-            throw new Error(`Failed to save PDF: ${error.message}`);
-        }
-    }
-
-    /**
-     * Get PDF document information
-     * @param {Buffer} pdfBuffer - PDF buffer
-     * @returns {Object} PDF information
-     */
-    getPDFInfo(pdfBuffer) {
-        try {
-            this._validateInput(pdfBuffer, 'buffer');
-
-            return {
-                size: pdfBuffer.length,
-                sizeFormatted: this._formatBytes(pdfBuffer.length),
-                version: PDF_VERSION,
-                isValid: this._validatePDFStructure(pdfBuffer),
-                createdAt: new Date().toISOString(),
-                generator: 'Enhanced PDF Generator v1.0.0'
-            };
-
-        } catch (error) {
-            this._handleError(error, 'getPDFInfo');
-            return {
-                size: 0,
-                sizeFormatted: '0 B',
-                version: PDF_VERSION,
-                isValid: false,
-                error: error.message
-            };
-        }
-    }
-
-    /**
-     * Get generator statistics
-     * @returns {Object} Statistics
-     */
-    getStatistics() {
-        return {
-            documentsGenerated: this.state.documentsGenerated,
-            totalProcessingTime: this.state.totalProcessingTime,
-            averageProcessingTime: this.state.documentsGenerated > 0
-                ? Math.round(this.state.totalProcessingTime / this.state.documentsGenerated)
-                : 0,
-            isProcessing: this.state.isProcessing,
-            lastError: this.state.lastError,
-            memoryUsage: process.memoryUsage(),
-            nodeVersion: process.version,
-            platform: process.platform,
-            architecture: process.arch
-        };
-    }
-
-    /**
-     * Reset generator state
-     */
-    reset() {
-        this.state = {
-            isProcessing: false,
-            lastError: null,
-            documentsGenerated: 0,
-            totalProcessingTime: 0
-        };
-
-        // Force garbage collection if available
-        if (global.gc) {
-            global.gc();
-        }
-
-        this._log('Generator state reset', 'info');
-    }
-
-    // ==========================================
-    // PRIVATE METHODS
-    // ==========================================
-
-    /**
-     * Validate Node.js version
-     * @private
-     */
-    _validateNodeVersion() {
-        const nodeVersion = process.version.substring(1); // Remove 'v' prefix
-        const [major, minor] = nodeVersion.split('.').map(Number);
-        const [reqMajor, reqMinor] = MIN_NODE_VERSION.split('.').map(Number);
-
-        if (major < reqMajor || (major === reqMajor && minor < reqMinor)) {
-            throw new Error(
-                `Node.js ${MIN_NODE_VERSION} or higher is required. Current version: ${process.version}`
-            );
-        }
-    }
-
-    /**
-     * Validate input parameters
-     * @private
-     */
-    _validateInput(input, expectedType) {
-        if (input === null || input === undefined) {
-            throw new Error(`Input cannot be null or undefined`);
-        }
-
-        switch (expectedType) {
-            case 'string':
-                if (typeof input !== 'string') {
-                    throw new Error(`Expected string input, got ${typeof input}`);
+                if (text) {
+                    content.push({
+                        text: text,
+                        type: 'heading',
+                        fontSize: Math.round(fontSize * 0.85),
+                        color: color,
+                        marginTop: 18,
+                        marginBottom: 12
+                    });
                 }
-                if (input.length === 0) {
-                    throw new Error('Input string cannot be empty');
-                }
-                if (input.length > this.config.maxContentSize) {
-                    throw new Error(`Input too large. Maximum size: ${this._formatBytes(this.config.maxContentSize)}`);
-                }
-                break;
-
-            case 'buffer':
-                if (!Buffer.isBuffer(input)) {
-                    throw new Error(`Expected Buffer input, got ${typeof input}`);
-                }
-                if (input.length === 0) {
-                    throw new Error('Buffer cannot be empty');
-                }
-                break;
-
-            default:
-                throw new Error(`Unknown validation type: ${expectedType}`);
-        }
-    }
-
-    /**
-     * Validate numeric input
-     * @private
-     */
-    _validateNumber(value, defaultValue, min = 0, max = Infinity) {
-        if (value === null || value === undefined) {
-            return defaultValue;
-        }
-
-        const num = Number(value);
-        if (isNaN(num)) {
-            return defaultValue;
-        }
-
-        return Math.max(min, Math.min(max, num));
-    }
-
-    /**
-     * Parse margin configuration
-     * @private
-     */
-    _parseMargin(margin) {
-        if (typeof margin === 'number') {
-            const safeMargin = Math.max(0, Math.min(200, margin));
-            return {
-                top: safeMargin,
-                right: safeMargin,
-                bottom: safeMargin,
-                left: safeMargin
-            };
-        }
-
-        if (typeof margin === 'object' && margin !== null) {
-            return {
-                top: this._validateNumber(margin.top, DEFAULT_MARGIN, 0, 200),
-                right: this._validateNumber(margin.right, DEFAULT_MARGIN, 0, 200),
-                bottom: this._validateNumber(margin.bottom, DEFAULT_MARGIN, 0, 200),
-                left: this._validateNumber(margin.left, DEFAULT_MARGIN, 0, 200)
-            };
-        }
-
-        return {
-            top: DEFAULT_MARGIN,
-            right: DEFAULT_MARGIN,
-            bottom: DEFAULT_MARGIN,
-            left: DEFAULT_MARGIN
-        };
-    }
-
-    /**
-     * Check processing state
-     * @private
-     */
-    _checkProcessingState() {
-        if (this.state.isProcessing) {
-            throw new Error('Generator is already processing. Please wait or create a new instance.');
-        }
-    }
-
-    /**
-     * Sanitize and validate options
-     * @private
-     */
-    _sanitizeOptions(options) {
-        const safeOptions = {
-            title: this._sanitizeString(options.title, 'Document'),
-            fontSize: this._validateNumber(options.fontSize, this.config.fontSize, 6, 72),
-            lineHeight: this._validateNumber(options.lineHeight, this.config.lineHeight, 8, 100),
-            margin: this._parseMargin(options.margin),
-            pageWidth: this._validateNumber(options.pageWidth, this.config.pageWidth, 200, 2000),
-            pageHeight: this._validateNumber(options.pageHeight, this.config.pageHeight, 200, 3000),
-            compress: Boolean(options.compress),
-            metadata: this._sanitizeMetadata(options.metadata || {})
-        };
-
-        return safeOptions;
-    }
-
-    /**
-     * Sanitize string input
-     * @private
-     */
-    _sanitizeString(input, defaultValue = '') {
-        if (typeof input !== 'string') {
-            return defaultValue;
-        }
-
-        // Remove potentially dangerous characters
-        return input
-            .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') // Control characters
-            .replace(/[\u0000-\u001F\u007F-\u009F]/g, '') // Extended control characters
-            .trim()
-            .substring(0, 255); // Limit length
-    }
-
-    /**
-     * Sanitize metadata
-     * @private
-     */
-    _sanitizeMetadata(metadata) {
-        const safeMetadata = {};
-
-        ['title', 'author', 'subject', 'keywords'].forEach(key => {
-            if (metadata[key]) {
-                safeMetadata[key] = this._sanitizeString(metadata[key]);
             }
+            else if (tag === 'p') {
+                const text = this._extractText(innerContent);
+                const fontSize = this._extractFontSize(attributes) || 16;
+                const color = this._extractColor(attributes) || '#2e2e2e';
+
+                this._log(`Extracted paragraph text: "${text}"`, 'debug');
+
+                if (text) {
+                    content.push({
+                        text: text,
+                        type: 'paragraph',
+                        fontSize: Math.round(fontSize * 0.85),
+                        color: color,
+                        marginTop: 0,
+                        marginBottom: 4
+                    });
+                }
+            }
+        }
+
+        this._log(`Extracted ${content.length} content elements`, 'debug');
+        return content;
+    }
+
+    /**
+     * Extract text from HTML content, handling nested tags properly
+     * @private
+     */
+    _extractText(htmlContent) {
+        if (!htmlContent || typeof htmlContent !== 'string') return '';
+
+        this._log(`Extracting text from: "${htmlContent}"`, 'debug');
+
+        let text = htmlContent;
+
+        // Remove any nested HTML tags (like spans, em, strong, etc.)
+        text = text.replace(/<[^>]+>/g, '');
+
+        // Clean up whitespace and decode HTML entities
+        text = text
+            .replace(/\s+/g, ' ')
+            .replace(/&nbsp;/g, ' ')
+            .replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&quot;/g, '"')
+            .replace(/&#39;/g, "'")
+            .trim();
+
+        // Format large numbers with commas
+        text = text.replace(/\b(\d{5,})\b/g, (match) => {
+            const num = parseInt(match);
+            return !isNaN(num) ? num.toLocaleString() : match;
         });
 
-        return safeMetadata;
+        this._log(`Extracted text result: "${text}"`, 'debug');
+        return text;
     }
 
     /**
-     * Sanitize file path
+     * Extract font size from style attribute
      * @private
      */
-    _sanitizeFilePath(filePath) {
-        if (typeof filePath !== 'string' || filePath.length === 0) {
-            throw new Error('Invalid file path');
-        }
+    _extractFontSize(attributeString) {
+        if (!attributeString) return null;
 
-        // Resolve path and check for directory traversal
-        const resolvedPath = path.resolve(filePath);
-        const normalizedPath = path.normalize(resolvedPath);
+        const match = attributeString.match(/font-size:\s*(\d+)px/i);
+        const result = match ? parseInt(match[1]) : null;
 
-        // Ensure it ends with .pdf
-        if (!normalizedPath.toLowerCase().endsWith('.pdf')) {
-            return normalizedPath + '.pdf';
-        }
-
-        return normalizedPath;
+        this._log(`Extracted font size: ${result}px from "${attributeString}"`, 'debug');
+        return result;
     }
 
     /**
-     * Detect content type (text vs HTML)
+     * Extract color from style attribute
      * @private
      */
-    _detectContentType(content) {
-        const htmlPatterns = [
-            /<html/i,
-            /<head/i,
-            /<body/i,
-            /<div/i,
-            /<p>/i,
-            /<h[1-6]/i,
-            /<table/i,
-            /<ul/i,
-            /<ol/i,
-            /<img/i,
-            /<br\s*\/?>/i,
-            /<[a-z]+[^>]*>/i
+    _extractColor(attributeString) {
+        if (!attributeString) return null;
+
+        const match = attributeString.match(/color:\s*(#[0-9a-f]{6}|#[0-9a-f]{3}|\w+)/i);
+        const result = match ? match[1] : null;
+
+        this._log(`Extracted color: ${result} from "${attributeString}"`, 'debug');
+        return result;
+    }
+
+    /**
+     * Generate stable PDF with minimal complexity
+     * @private
+     */
+    _generateStablePDF(content, options) {
+        // PDF Header
+        const pdfContent = [
+            '%PDF-1.4',
+            ''
         ];
 
-        return htmlPatterns.some(pattern => pattern.test(content)) ? 'html' : 'text';
-    }
+        // Object 1: Catalog
+        pdfContent.push('1 0 obj');
+        pdfContent.push('<<');
+        pdfContent.push('/Type /Catalog');
+        pdfContent.push('/Pages 2 0 R');
+        pdfContent.push('>>');
+        pdfContent.push('endobj');
+        pdfContent.push('');
 
-    /**
-     * Extract title from HTML
-     * @private
-     */
-    _extractHTMLTitle(html) {
-        const titleMatch = html.match(/<title[^>]*>(.*?)<\/title>/i);
-        return titleMatch ? this._sanitizeString(titleMatch[1]) : null;
-    }
+        // Object 2: Pages
+        pdfContent.push('2 0 obj');
+        pdfContent.push('<<');
+        pdfContent.push('/Type /Pages');
+        pdfContent.push('/Kids [3 0 R]');
+        pdfContent.push('/Count 1');
+        pdfContent.push('>>');
+        pdfContent.push('endobj');
+        pdfContent.push('');
 
-    /**
-     * Convert HTML to plain text
-     * @private
-     */
-    _convertHTMLToText(html) {
-        try {
-            return html
-                // Remove script and style tags completely
-                .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-                .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-                // Add line breaks for block elements
-                .replace(/<\/?(h[1-6]|p|div|br|hr)[^>]*>/gi, '\n')
-                .replace(/<\/?(ul|ol|li)[^>]*>/gi, '\n')
-                .replace(/<\/?(table|tr|td|th)[^>]*>/gi, '\n')
-                // Remove all remaining HTML tags
-                .replace(/<[^>]*>/g, '')
-                // Decode common HTML entities
-                .replace(/&nbsp;/g, ' ')
-                .replace(/&amp;/g, '&')
-                .replace(/&lt;/g, '<')
-                .replace(/&gt;/g, '>')
-                .replace(/&quot;/g, '"')
-                .replace(/&#39;/g, "'")
-                .replace(/&apos;/g, "'")
-                // Clean up whitespace
-                .replace(/\n\s*\n/g, '\n\n')
-                .replace(/[ \t]+/g, ' ')
-                .trim();
-        } catch (error) {
-            this._log(`HTML conversion error: ${error.message}`, 'warn');
-            return html.replace(/<[^>]*>/g, '').trim();
-        }
-    }
+        // Generate content stream
+        const contentStream = this._generateContentStream(content, options);
+        const streamLength = Buffer.byteLength(contentStream, 'utf8');
 
-    /**
-     * Process text content into lines
-     * @private
-     */
-    _processTextToLines(text, options) {
-        const maxWidth = options.pageWidth - options.margin.left - options.margin.right;
-        const avgCharWidth = options.fontSize * 0.6; // Approximate character width
-        const maxCharsPerLine = Math.floor(maxWidth / avgCharWidth);
+        // Object 3: Page
+        pdfContent.push('3 0 obj');
+        pdfContent.push('<<');
+        pdfContent.push('/Type /Page');
+        pdfContent.push('/Parent 2 0 R');
+        pdfContent.push(`/MediaBox [0 0 ${options.pageWidth} ${options.pageHeight}]`);
+        pdfContent.push('/Resources <<');
+        pdfContent.push('/Font <<');
+        pdfContent.push('/F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>');
+        pdfContent.push('/F2 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>');
+        pdfContent.push('>>');
+        pdfContent.push('>>');
+        pdfContent.push('/Contents 4 0 R');
+        pdfContent.push('>>');
+        pdfContent.push('endobj');
+        pdfContent.push('');
 
-        const paragraphs = text.split(/\n\s*\n/).filter(p => p.trim().length > 0);
-        const lines = [];
-
-        paragraphs.forEach((paragraph, index) => {
-            // Add spacing between paragraphs
-            if (index > 0) {
-                lines.push(''); // Empty line for spacing
-            }
-
-            const words = paragraph.trim().split(/\s+/);
-            let currentLine = '';
-
-            words.forEach(word => {
-                const testLine = currentLine + (currentLine ? ' ' : '') + word;
-
-                if (testLine.length <= maxCharsPerLine) {
-                    currentLine = testLine;
-                } else {
-                    if (currentLine) {
-                        lines.push(currentLine);
-                    }
-
-                    // Handle very long words
-                    if (word.length > maxCharsPerLine) {
-                        for (let i = 0; i < word.length; i += maxCharsPerLine) {
-                            lines.push(word.substring(i, i + maxCharsPerLine));
-                        }
-                        currentLine = '';
-                    } else {
-                        currentLine = word;
-                    }
-                }
-            });
-
-            if (currentLine) {
-                lines.push(currentLine);
-            }
-        });
-
-        return lines;
-    }
-
-    /**
-     * Create PDF document
-     * @private
-     */
-    async _createPDFDocument(lines, title, contentType, options) {
-        try {
-            const objects = [];
-            let objectId = 1;
-
-            // Calculate pagination
-            const effectiveHeight = options.pageHeight - options.margin.top - options.margin.bottom;
-            const linesPerPage = Math.floor(effectiveHeight / options.lineHeight);
-            const pages = [];
-
-            // Split lines into pages
-            for (let i = 0; i < lines.length; i += linesPerPage) {
-                pages.push(lines.slice(i, i + linesPerPage));
-            }
-
-            // Ensure at least one page
-            if (pages.length === 0) {
-                pages.push(['']);
-            }
-
-            // Object 1: Catalog
-            objects.push({
-                id: objectId++,
-                content: `<<\n/Type /Catalog\n/Pages 2 0 R\n>>`
-            });
-
-            // Object 2: Pages
-            const pageRefs = pages.map((_, index) => `${3 + index * 2} 0 R`).join(' ');
-            objects.push({
-                id: objectId++,
-                content: `<<\n/Type /Pages\n/Kids [${pageRefs}]\n/Count ${pages.length}\n>>`
-            });
-
-            // Create page objects and content streams
-            pages.forEach((pageLines) => {
-                const pageId = objectId++;
-                const contentId = objectId++;
-
-                // Page object
-                objects.push({
-                    id: pageId,
-                    content: `<<\n/Type /Page\n/Parent 2 0 R\n/MediaBox [0 0 ${options.pageWidth} ${options.pageHeight}]\n/Resources <<\n  /Font <<\n    /F1 ${objects.length + pages.length * 2 + 1} 0 R\n  >>\n>>\n/Contents ${contentId} 0 R\n>>`
-                });
-
-                // Content stream
-                const contentStream = this._createContentStream(pageLines, options);
-                objects.push({
-                    id: contentId,
-                    content: `<<\n/Length ${contentStream.length}\n>>\nstream\n${contentStream}\nendstream`
-                });
-            });
-
-            // Font object
-            objects.push({
-                id: objectId++,
-                content: `<<\n/Type /Font\n/Subtype /Type1\n/BaseFont /Helvetica\n>>`
-            });
-
-            // Info object
-            const now = new Date();
-            const pdfDate = `D:${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
-
-            objects.push({
-                id: objectId++,
-                content: `<<\n/Title (${this._escapeString(title)})\n/Producer (Enhanced PDF Generator v1.0.0)\n/Creator (Enhanced PDF Generator)\n/CreationDate (${pdfDate})\n/ModDate (${pdfDate})\n>>`
-            });
-
-            // Build final PDF
-            return this._buildPDFFile(objects, objectId - 1);
-
-        } catch (error) {
-            throw new Error(`PDF document creation failed: ${error.message}`);
-        }
-    }
-
-    /**
-     * Create content stream for a page
-     * @private
-     */
-    _createContentStream(lines, options) {
-        const content = [];
-        content.push('BT'); // Begin text
-        content.push(`/F1 ${options.fontSize} Tf`); // Set font
-
-        let yPosition = options.pageHeight - options.margin.top - options.fontSize;
-        let isFirstLine = true;
-
-        lines.forEach(line => {
-            if (yPosition < options.margin.bottom) {
-                return; // Skip if we're too close to bottom margin
-            }
-
-            if (isFirstLine) {
-                content.push(`${options.margin.left} ${yPosition} Td`);
-                isFirstLine = false;
-            } else {
-                content.push(`0 -${options.lineHeight} Td`);
-            }
-            content.push(`(${this._escapeString(line)}) Tj`);
-            yPosition -= options.lineHeight;
-        });
-
-        content.push('ET'); // End text
-        return content.join('\n');
-    }
-
-    /**
-     * Build the final PDF file
-     * @private
-     */
-    _buildPDFFile(objects, infoObjectId) {
-        const lines = [];
-
-        // PDF header
-        lines.push(`%PDF-${PDF_VERSION}`);
-        lines.push('%âãÏÓ'); // Binary comment for PDF readers
-
-        // Track object positions for xref table
-        const objectPositions = [];
-
-        // Calculate initial position after header
-        let currentPosition = 0;
-        const headerContent = lines.join('\n') + '\n';
-        currentPosition = Buffer.from(headerContent, 'binary').length;
-
-        // Add objects
-        objects.forEach(obj => {
-            objectPositions.push(currentPosition);
-
-            const objContent = `${obj.id} 0 obj\n${obj.content}\nendobj\n`;
-            lines.push(objContent);
-            currentPosition += Buffer.from(objContent, 'binary').length;
-        });
+        // Object 4: Content Stream
+        pdfContent.push('4 0 obj');
+        pdfContent.push('<<');
+        pdfContent.push(`/Length ${streamLength}`);
+        pdfContent.push('>>');
+        pdfContent.push('stream');
+        pdfContent.push(contentStream);
+        pdfContent.push('endstream');
+        pdfContent.push('endobj');
+        pdfContent.push('');
 
         // Cross-reference table
-        const xrefPosition = currentPosition;
-        lines.push('xref');
-        lines.push(`0 ${objects.length + 1}`);
-        lines.push('0000000000 65535 f ');
+        const xrefPos = Buffer.byteLength(pdfContent.join('\n') + '\n', 'utf8');
+        pdfContent.push('xref');
+        pdfContent.push('0 5');
+        pdfContent.push('0000000000 65535 f ');
 
-        objectPositions.forEach(pos => {
-            lines.push(`${pos.toString().padStart(10, '0')} 00000 n `);
-        });
+        // Calculate object positions
+        let pos = 9; // Start after "%PDF-1.4\n"
+        for (let i = 1; i <= 4; i++) {
+            const objIndex = pdfContent.findIndex(line => line === `${i} 0 obj`);
+            if (objIndex !== -1) {
+                let objPos = 0;
+                for (let j = 0; j < objIndex; j++) {
+                    objPos += Buffer.byteLength(pdfContent[j] + '\n', 'utf8');
+                }
+                pdfContent.push(String(objPos).padStart(10, '0') + ' 00000 n ');
+            }
+        }
 
         // Trailer
-        lines.push('trailer');
-        lines.push('<<');
-        lines.push(`/Size ${objects.length + 1}`);
-        lines.push('/Root 1 0 R');
-        lines.push(`/Info ${infoObjectId} 0 R`);
-        lines.push('>>');
-        lines.push('startxref');
-        lines.push(`${xrefPosition}`);
-        lines.push('%%EOF');
+        pdfContent.push('trailer');
+        pdfContent.push('<<');
+        pdfContent.push('/Size 5');
+        pdfContent.push('/Root 1 0 R');
+        pdfContent.push('>>');
+        pdfContent.push('startxref');
+        pdfContent.push(String(xrefPos));
+        pdfContent.push('%%EOF');
 
-        return Buffer.from(lines.join('\n'), 'binary');
+        return Buffer.from(pdfContent.join('\n'), 'utf8');
     }
 
     /**
-     * Escape special characters for PDF strings
+     * Generate content stream with maximum safety
      * @private
      */
-    _escapeString(str) {
-        if (!str || typeof str !== 'string') {
-            return '';
+    _generateContentStream(content, options) {
+        const stream = [];
+        let currentY = options.pageHeight - options.margin.top;
+        const x = options.margin.left;
+        const lineHeightMultiplier = 1.5; // Standard line height multiplier
+
+        this._log(`Starting content stream generation with ${content.length} items`, 'debug');
+
+        for (let i = 0; i < content.length; i++) {
+            const item = content[i];
+
+            try {
+                this._log(`Processing item ${i}: type=${item.type}, text="${item.text || 'N/A'}", currentY=${currentY}`, 'debug');
+
+                if (item.type === 'line') {
+                    // Draw line
+                    currentY -= (item.marginTop || 8);
+                    const lineY = currentY;
+                    const lineX1 = options.margin.left;
+                    const lineX2 = options.pageWidth - options.margin.right;
+
+                    stream.push('q'); // Save state
+                    stream.push('0.7 0.7 0.7 RG'); // Gray color
+                    stream.push('1 w'); // Line width
+                    stream.push(`${lineX1} ${lineY} m`); // Move to start
+                    stream.push(`${lineX2} ${lineY} l`); // Line to end
+                    stream.push('S'); // Stroke
+                    stream.push('Q'); // Restore state
+
+                    currentY -= (item.marginBottom || 8);
+                    continue;
+                }
+
+                // Handle text content
+                if (item.text && item.text.trim()) {
+                    // Apply top margin
+                    if (item.marginTop > 0) {
+                        currentY -= item.marginTop;
+                    }
+
+                    // Calculate line height
+                    const fontSize = Math.max(8, Math.min(24, item.fontSize || 12));
+                    const lineHeight = fontSize * lineHeightMultiplier;
+
+                    // Check if we need to go to next page
+                    if (currentY - lineHeight < options.margin.bottom) {
+                        // Would go off page, so clamp to bottom margin
+                        this._log(`Text would go off page, stopping at bottom margin`, 'warn');
+                        break;
+                    }
+
+                    // Begin text object for each text item
+                    stream.push('BT');
+
+                    // Set font
+                    const font = item.type === 'heading' ? 'F2' : 'F1'; // Bold for headings
+                    stream.push(`/${font} ${fontSize} Tf`);
+
+                    // Set color
+                    const [r, g, b] = this._hexToRgb(item.color || '#000000');
+                    stream.push(`${r} ${g} ${b} rg`);
+
+                    // Position text - always use absolute positioning
+                    // In PDF, Y coordinate is the baseline of text, so we need to adjust
+                    const textY = currentY - fontSize;
+                    stream.push(`${x} ${textY} Td`);
+
+                    // Escape and add text
+                    const safeText = this._escapePDFString(item.text);
+                    stream.push(`(${safeText}) Tj`);
+
+                    // End text object
+                    stream.push('ET');
+
+                    this._log(`Added text: "${safeText}" at position x=${x}, y=${textY}`, 'debug');
+
+                    // Update position for next element
+                    currentY -= lineHeight;
+
+                    // Apply bottom margin
+                    if (item.marginBottom > 0) {
+                        currentY -= item.marginBottom;
+                    }
+                } else {
+                    this._log(`Skipping item with no text: type=${item.type}`, 'debug');
+                }
+
+            } catch (error) {
+                this._log(`Error rendering item ${i}: ${error.message}`, 'warn');
+            }
         }
 
+        const result = stream.join('\n');
+        this._log(`Generated content stream: ${result.substring(0, 200)}...`, 'debug');
+        return result;
+    }
+
+    /**
+     * Convert hex color to RGB values for PDF
+     * @private
+     */
+    _hexToRgb(hex) {
+        // Handle short hex colors
+        if (hex.length === 4) {
+            hex = '#' + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3];
+        }
+
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        if (!result) return ['0.000', '0.000', '0.000'];
+
+        const r = (parseInt(result[1], 16) / 255).toFixed(3);
+        const g = (parseInt(result[2], 16) / 255).toFixed(3);
+        const b = (parseInt(result[3], 16) / 255).toFixed(3);
+
+        return [r, g, b];
+    }
+
+    /**
+     * Escape string for PDF content
+     * @private
+     */
+    _escapePDFString(str) {
+        if (!str) return '';
         return str
             .replace(/\\/g, '\\\\')
             .replace(/\(/g, '\\(')
             .replace(/\)/g, '\\)')
-            .replace(/\r/g, '\\r')
-            .replace(/\n/g, '\\n')
-            .replace(/\t/g, '\\t')
-            .substring(0, 1000); // Limit string length for safety
+            .replace(/\r/g, ' ')
+            .replace(/\n/g, ' ')
+            .replace(/\t/g, ' ');
     }
 
     /**
-     * Validate PDF structure (comprehensive check)
-     * @private
+     * Save PDF to file
      */
-    _validatePDFStructure(pdfBuffer) {
+    async savePDF(pdfBuffer, filePath) {
         try {
-            if (!Buffer.isBuffer(pdfBuffer) || pdfBuffer.length < 100) {
-                return false;
-            }
-
-            // Convert to string for structure checking
-            const pdfString = pdfBuffer.toString('binary');
-
-            // Check PDF header
-            if (!pdfString.startsWith('%PDF-')) {
-                this._log('PDF validation failed: Missing PDF header', 'debug');
-                return false;
-            }
-
-            // Check PDF footer
-            if (!pdfString.includes('%%EOF')) {
-                this._log('PDF validation failed: Missing EOF marker', 'debug');
-                return false;
-            }
-
-            // Check for essential PDF structures
-            const requiredElements = [
-                '/Type /Catalog',
-                '/Type /Pages',
-                '/Type /Page',
-                'xref',
-                'trailer',
-                'startxref'
-            ];
-
-            for (const element of requiredElements) {
-                if (!pdfString.includes(element)) {
-                    this._log(`PDF validation failed: Missing ${element}`, 'debug');
-                    return false;
-                }
-            }
-
-            // Check that xref comes before trailer
-            const xrefPos = pdfString.indexOf('xref');
-            const trailerPos = pdfString.indexOf('trailer');
-            if (xrefPos === -1 || trailerPos === -1 || xrefPos >= trailerPos) {
-                this._log('PDF validation failed: Invalid xref/trailer order', 'debug');
-                return false;
-            }
-
-            this._log('PDF structure validation passed', 'debug');
-            return true;
-
+            await fs.writeFile(filePath, pdfBuffer);
+            this._log(`PDF saved to: ${filePath}`, 'info');
         } catch (error) {
-            this._log(`PDF validation error: ${error.message}`, 'debug');
-            return false;
+            this._log(`Failed to save PDF: ${error.message}`, 'error');
+            throw error;
         }
     }
 
     /**
-     * Format bytes to human readable string
-     * @private
+     * Get PDF information
      */
-    _formatBytes(bytes) {
-        if (bytes === 0) return '0 B';
+    getPDFInfo(pdfBuffer) {
+        const sizeInBytes = pdfBuffer.length;
+        const sizeInKB = (sizeInBytes / 1024).toFixed(2);
 
-        const k = 1024;
-        const sizes = ['B', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-    }
-
-    /**
-     * Ensure directory exists
-     * @private
-     */
-    async _ensureDirectoryExists(directory) {
-        try {
-            await fs.promises.access(directory);
-        } catch (error) {
-            if (error.code === 'ENOENT') {
-                await fs.promises.mkdir(directory, { recursive: true });
-            } else {
-                throw error;
-            }
-        }
-    }
-
-    /**
-     * Write file asynchronously
-     * @private
-     */
-    async _writeFileAsync(filePath, data) {
-        return fs.promises.writeFile(filePath, data);
-    }
-
-    /**
-     * Start performance tracking
-     * @private
-     */
-    _startPerformanceTracking() {
-        this.performance.startTime = Date.now();
-        this.performance.memoryUsage = process.memoryUsage();
-    }
-
-    /**
-     * End performance tracking
-     * @private
-     */
-    _endPerformanceTracking() {
-        this.performance.endTime = Date.now();
-        const processingTime = this.performance.endTime - this.performance.startTime;
-        this.state.totalProcessingTime += processingTime;
-
-        this._log(`Processing completed in ${processingTime}ms`, 'debug');
-    }
-
-    /**
-     * Update statistics
-     * @private
-     */
-    _updateStatistics() {
-        this.state.documentsGenerated++;
-    }
-
-    /**
-     * Handle errors
-     * @private
-     */
-    _handleError(error, method) {
-        this.state.lastError = {
-            message: error.message,
-            method: method,
-            timestamp: new Date().toISOString(),
-            stack: error.stack
+        return {
+            size: sizeInBytes,
+            sizeFormatted: `${sizeInKB} KB`,
+            isValid: pdfBuffer.toString('utf8', 0, 8) === '%PDF-1.4'
         };
-
-        this._log(`Error in ${method}: ${error.message}`, 'error');
     }
 
     /**
-     * Log messages
+     * Internal logging
      * @private
      */
     _log(message, level = 'info') {
-        if (!this.config.debug && level === 'debug') {
-            return;
-        }
-
-        const timestamp = new Date().toISOString();
-        const prefix = `[${timestamp}] [${level.toUpperCase()}] [EnhancedPDFGenerator]`;
-
-        switch (level) {
-            case 'error':
-                console.error(`${prefix} ${message}`);
-                break;
-            case 'warn':
-                console.warn(`${prefix} ${message}`);
-                break;
-            case 'debug':
-                console.debug(`${prefix} ${message}`);
-                break;
-            default:
-                console.log(`${prefix} ${message}`);
-                break;
+        if (this.options.debug) {
+            const timestamp = new Date().toISOString();
+            const levelStr = level.toUpperCase().padEnd(5);
+            console.log(`[${timestamp}] [${levelStr}] [EnhancedPDFGenerator] ${message}`);
         }
     }
 }
 
-// Export the class
 module.exports = EnhancedPDFGenerator;
-
-// Export constants for external use
-module.exports.PAGE_FORMATS = PAGE_FORMATS;
-module.exports.PDF_VERSION = PDF_VERSION;
