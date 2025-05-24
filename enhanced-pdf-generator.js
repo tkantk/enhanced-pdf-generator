@@ -4,7 +4,7 @@
  * A comprehensive, zero-dependency PDF generator for Node.js applications
  * Supports both plain text and HTML content conversion to PDF
  *
- * @version 2.0.0
+ * @version 2.1.0
  * @author Tushar Kar
  * @license MIT
  *
@@ -85,36 +85,66 @@ class EnhancedPDFGenerator {
             .replace(/<\/html>/gi, '')
             .replace(/<head[^>]*>[\s\S]*?<\/head>/gi, '')
             .replace(/<body[^>]*>/gi, '')
-            .replace(/<\/body>/gi, '')
+            .replace(/<\/body>/gi, '');
+
+        // Remove any elements with display:none or visibility:hidden (including divs, spans, etc.)
+        // More precise regex that handles self-closing tags and nested content
+        cleanHtml = cleanHtml.replace(/<(\w+)([^>]*style\s*=\s*["'][^"']*display\s*:\s*none[^"']*["'][^>]*)>[\s\S]*?<\/\1>/gi, '');
+        cleanHtml = cleanHtml.replace(/<(\w+)([^>]*style\s*=\s*["'][^"']*visibility\s*:\s*hidden[^"']*["'][^>]*)>[\s\S]*?<\/\1>/gi, '');
+
+        // Now remove div tags but keep their content
+        cleanHtml = cleanHtml
             .replace(/<div[^>]*>/gi, '')
             .replace(/<\/div>/gi, '');
 
+        // Clean up excessive whitespace
+        cleanHtml = cleanHtml.replace(/\n\s*\n/g, '\n').trim();
+
         this._log(`Processing HTML: ${cleanHtml.substring(0, 200)}...`, 'debug');
 
-        // Use regex to find all elements with their content
-        const elementRegex = /<(h[1-6]|p|hr)([^>]*)>(.*?)<\/\1>|<(hr)[^>]*\/?>/gis;
+        // Updated regex to properly capture hr tags (both self-closing and not)
+        // This regex now captures attributes more reliably including those with spaces
+        const elementRegex = /<(h[1-6]|p)\s*([^>]*)>([\s\S]*?)<\/\1>|<(hr)\s*([^>]*?)\s*\/?>/gis;
         let match;
 
         while ((match = elementRegex.exec(cleanHtml)) !== null) {
             const tag = match[1] || match[4]; // h1-h6, p, or hr
-            const attributes = match[2] || '';
+            const attributes = match[2] || match[5] || '';
             const innerContent = match[3] || '';
 
-            this._log(`Found element: ${tag}, content: "${innerContent}"`, 'debug');
+            this._log(`\n--- Processing Element ---`, 'debug');
+            this._log(`Tag: ${tag}`, 'debug');
+            this._log(`Full Match: "${match[0]}"`, 'debug');
+            this._log(`Attributes: "${attributes}"`, 'debug');
+            this._log(`Inner Content: "${innerContent}"`, 'debug');
+
+            // Check for display: none on the element itself
+            if (this._isHidden(attributes)) {
+                this._log(`✗ Skipping hidden element: ${tag}`, 'debug');
+                continue;
+            }
 
             if (tag === 'hr') {
+                const marginTop = this._extractMargin(attributes, 'top');
+                const marginBottom = this._extractMargin(attributes, 'bottom');
+
+                this._log(`HR margins extracted - top: ${marginTop}, bottom: ${marginBottom}`, 'debug');
+
                 content.push({
                     type: 'line',
-                    marginTop: 12,
-                    marginBottom: 12
+                    marginTop: marginTop !== null ? marginTop : 12,
+                    marginBottom: marginBottom !== null ? marginBottom : 12
                 });
+                this._log(`✓ Added HR with margins - top: ${marginTop !== null ? marginTop : 12}, bottom: ${marginBottom !== null ? marginBottom : 12}`, 'debug');
             }
             else if (tag.match(/h[1-6]/i)) {
                 const text = this._extractText(innerContent);
                 const fontSize = this._extractFontSize(attributes) || 18;
                 const color = this._extractColor(attributes) || '#2e2e2e';
+                const marginTop = this._extractMargin(attributes, 'top');
+                const marginBottom = this._extractMargin(attributes, 'bottom');
 
-                this._log(`Extracted heading text: "${text}"`, 'debug');
+                this._log(`Heading margins - top: ${marginTop}, bottom: ${marginBottom}`, 'debug');
 
                 if (text) {
                     content.push({
@@ -122,17 +152,20 @@ class EnhancedPDFGenerator {
                         type: 'heading',
                         fontSize: Math.round(fontSize * 0.85),
                         color: color,
-                        marginTop: 18,
-                        marginBottom: 12
+                        marginTop: marginTop !== null ? marginTop : 18,
+                        marginBottom: marginBottom !== null ? marginBottom : 12
                     });
+                    this._log(`✓ Added heading with margins - top: ${marginTop !== null ? marginTop : 18}, bottom: ${marginBottom !== null ? marginBottom : 12}`, 'debug');
                 }
             }
             else if (tag === 'p') {
                 const text = this._extractText(innerContent);
                 const fontSize = this._extractFontSize(attributes) || 16;
                 const color = this._extractColor(attributes) || '#2e2e2e';
+                const marginTop = this._extractMargin(attributes, 'top');
+                const marginBottom = this._extractMargin(attributes, 'bottom');
 
-                this._log(`Extracted paragraph text: "${text}"`, 'debug');
+                this._log(`Paragraph margins - top: ${marginTop}, bottom: ${marginBottom}`, 'debug');
 
                 if (text) {
                     content.push({
@@ -140,14 +173,21 @@ class EnhancedPDFGenerator {
                         type: 'paragraph',
                         fontSize: Math.round(fontSize * 0.85),
                         color: color,
-                        marginTop: 0,
-                        marginBottom: 4
+                        marginTop: marginTop !== null ? marginTop : 0,
+                        marginBottom: marginBottom !== null ? marginBottom : 4
                     });
+                    this._log(`✓ Added paragraph with margins - top: ${marginTop !== null ? marginTop : 0}, bottom: ${marginBottom !== null ? marginBottom : 4}`, 'debug');
                 }
             }
         }
 
         this._log(`Extracted ${content.length} content elements`, 'debug');
+
+        if (content.length === 0) {
+            this._log(`WARNING: No content extracted from HTML. Check regex patterns and HTML structure.`, 'warn');
+            this._log(`Clean HTML sample: ${cleanHtml.substring(0, 500)}`, 'debug');
+        }
+
         return content;
     }
 
@@ -161,6 +201,10 @@ class EnhancedPDFGenerator {
         this._log(`Extracting text from: "${htmlContent}"`, 'debug');
 
         let text = htmlContent;
+
+        // First, remove any elements with display:none or visibility:hidden
+        text = text.replace(/<[^>]+style\s*=\s*["'][^"']*display\s*:\s*none[^"']*["'][^>]*>[\s\S]*?<\/[^>]+>/gi, '');
+        text = text.replace(/<[^>]+style\s*=\s*["'][^"']*visibility\s*:\s*hidden[^"']*["'][^>]*>[\s\S]*?<\/[^>]+>/gi, '');
 
         // Remove any nested HTML tags (like spans, em, strong, etc.)
         text = text.replace(/<[^>]+>/g, '');
@@ -176,10 +220,35 @@ class EnhancedPDFGenerator {
             .replace(/&#39;/g, "'")
             .trim();
 
-        // Format large numbers with commas
-        text = text.replace(/\b(\d{5,})\b/g, (match) => {
-            const num = parseInt(match);
-            return !isNaN(num) ? num.toLocaleString() : match;
+        // Format large numbers with commas - but be more selective
+        // Only format numbers that are clearly monetary amounts or large quantities
+        // Don't format phone numbers (numbers with spaces or that start with country codes)
+        text = text.replace(/\b(\d{5,})\b/g, (match, num, offset, fullString) => {
+            // Check if this might be a phone number
+            const before = fullString.substring(Math.max(0, offset - 20), offset);
+            const after = fullString.substring(offset + match.length, offset + match.length + 10);
+
+            // Skip if it looks like a phone number
+            if (before.match(/mobile|phone|tel|contact|fax|cell/i) ||
+                before.includes('91 ') || before.endsWith('91') ||
+                after.startsWith(' ') || before.endsWith(' ') ||
+                (num.length >= 10 && num.length <= 12)) {
+                return match;
+            }
+
+            // Skip if it's part of a date (like 1999)
+            if (num.length === 4 && parseInt(num) >= 1900 && parseInt(num) <= 2100) {
+                return match;
+            }
+
+            // Skip if it's an email/birthdate format (09/09/1999 extracted as 9999)
+            if (num.length === 4 && before.includes('/')) {
+                return match;
+            }
+
+            // Format the number (likely a monetary amount)
+            const parsed = parseInt(num);
+            return !isNaN(parsed) ? parsed.toLocaleString() : match;
         });
 
         this._log(`Extracted text result: "${text}"`, 'debug');
@@ -207,11 +276,91 @@ class EnhancedPDFGenerator {
     _extractColor(attributeString) {
         if (!attributeString) return null;
 
-        const match = attributeString.match(/color:\s*(#[0-9a-f]{6}|#[0-9a-f]{3}|\w+)/i);
+        // Extract the style attribute value
+        const styleMatch = attributeString.match(/style\s*=\s*["']([^"']+)["']/i);
+        if (!styleMatch) return null;
+
+        let styleValue = styleMatch[1];
+        // Remove backticks if present
+        styleValue = styleValue.replace(/`/g, '');
+
+        const match = styleValue.match(/color:\s*(#[0-9a-f]{6}|#[0-9a-f]{3}|\w+)/i);
         const result = match ? match[1] : null;
 
-        this._log(`Extracted color: ${result} from "${attributeString}"`, 'debug');
+        this._log(`Extracted color: ${result} from style: "${styleValue}"`, 'debug');
         return result;
+    }
+
+    /**
+     * Extract margin value from style attribute
+     * @private
+     */
+    _extractMargin(attributeString, side) {
+        if (!attributeString) return null;
+
+        // Extract the style attribute value first
+        const styleMatch = attributeString.match(/style\s*=\s*["']([^"']+)["']/i);
+        if (!styleMatch) return null;
+
+        const styleValue = styleMatch[1];
+        this._log(`Extracting margin-${side} from style: "${styleValue}"`, 'debug');
+
+        // Check for specific margin property
+        const marginPattern = new RegExp(`margin-${side}\\s*:\\s*(\\d+)(?:px)?`, 'i');
+        const match = styleValue.match(marginPattern);
+
+        if (match) {
+            const value = parseInt(match[1]);
+            this._log(`Found margin-${side}: ${value}px`, 'debug');
+            return value;
+        }
+
+        // Check shorthand margin
+        const shorthandMatch = styleValue.match(/margin\s*:\s*(\d+)(?:px)?(?:\s+(\d+)(?:px)?)?(?:\s+(\d+)(?:px)?)?(?:\s+(\d+)(?:px)?)?/i);
+        if (shorthandMatch) {
+            const values = [
+                parseInt(shorthandMatch[1]), // top
+                parseInt(shorthandMatch[2] || shorthandMatch[1]), // right
+                parseInt(shorthandMatch[3] || shorthandMatch[1]), // bottom
+                parseInt(shorthandMatch[4] || shorthandMatch[2] || shorthandMatch[1]) // left
+            ];
+
+            const sideIndex = { top: 0, right: 1, bottom: 2, left: 3 };
+            const value = values[sideIndex[side]];
+            this._log(`Found margin-${side} from shorthand: ${value}px`, 'debug');
+            return value;
+        }
+
+        this._log(`No margin-${side} found`, 'debug');
+        return null;
+    }
+
+    /**
+     * Check if element should be hidden
+     * @private
+     */
+    _isHidden(attributeString) {
+        if (!attributeString) return false;
+
+        // Extract the style attribute value
+        const styleMatch = attributeString.match(/style\s*=\s*["']([^"']+)["']/i);
+        if (!styleMatch) return false;
+
+        const styleValue = styleMatch[1];
+
+        // Check for display: none
+        if (styleValue.match(/display\s*:\s*none/i)) {
+            this._log(`Element hidden due to display:none`, 'debug');
+            return true;
+        }
+
+        // Check for visibility: hidden
+        if (styleValue.match(/visibility\s*:\s*hidden/i)) {
+            this._log(`Element hidden due to visibility:hidden`, 'debug');
+            return true;
+        }
+
+        return false;
     }
 
     /**

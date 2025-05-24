@@ -36,7 +36,7 @@ const TEST_CONFIG = {
     Full Name: Mr Tushar Kant Kar
 </p>
 <p style="font-family: arial; margin-top: 0; margin-bottom: 8px; font-size: 16px; color:#2e2e2e;">
-    Mobile Number: 91 9,99,99,99,999
+    Mobile Number: 91 9999999999
 </p>
 <p style="font-family: arial; margin-top: 0; margin-bottom: 8px; font-size: 16px; color:#2e2e2e;">Email Address: test@test.com</p>
 <p style="font-family: arial; margin-top: 0; margin-bottom: 8px; font-size: 16px; color:#2e2e2e;">Birthdate: 09/09/1999</p>

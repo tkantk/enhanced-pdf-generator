@@ -263,6 +263,7 @@ const pdfBuffer = await generator.generatePDFFromHTML(reportHtml, {
 
 ## Version History
 
+- **v2.1.0** - Fixed support for picking styles from input and added support for display none.
 - **v2.0.0** - Added Support for Styles and CSS, Fixed text positioning, improved spacing, removed text truncation
 - **v1.2.0** - Added styled HTML support, improved debugging
 - **v1.0.0** - Initial stable release
